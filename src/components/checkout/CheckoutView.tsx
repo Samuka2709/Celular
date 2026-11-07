@@ -205,7 +205,7 @@ export function CheckoutView() {
         return;
       }
       // Vai para o Mercado Pago (ou para a página de sucesso no modo demonstração)
-      if (/^https?:\/\//.test(r.redirect)) window.location.href = r.redirect;
+      if (/^https?:\/\//.test(r.redirect)) window.location.assign(r.redirect);
       else router.push(r.redirect);
     } catch {
       setErroEnvio({ erro: "Sem conexão. Confira sua internet e tente de novo." });

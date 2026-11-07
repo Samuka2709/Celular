@@ -18,7 +18,7 @@ const json = (body: Resposta, status = 200) => NextResponse.json(body, { status 
 
 export async function POST(req: Request) {
   // 1. Rate limit: 6 pedidos a cada 10 minutos por IP
-  const limite = limitar(`checkout:${ipDaRequisicao(req)}`, 6, 10 * 60_000);
+  const limite = await limitar(`checkout:${ipDaRequisicao(req)}`, 6, 10 * 60_000);
   if (!limite.ok) {
     return json({ ok: false, erro: `Muitas tentativas. Tente de novo em ${Math.ceil(limite.tentarEmSeg / 60)} min.` }, 429);
   }

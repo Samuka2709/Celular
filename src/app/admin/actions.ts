@@ -2,12 +2,14 @@
 
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { exigirAdmin } from "@/lib/admin";
 import { supabaseConfigurado } from "@/lib/env";
 import { emailMudancaStatus } from "@/lib/notificacoes/email";
 import { carregarPedido } from "@/lib/pedidos";
+import { ipDosCabecalhos, limitar } from "@/lib/rate-limit";
 import { supabaseServico, supabaseSessao } from "@/lib/supabase/server";
 import type { OrderStatus } from "@/lib/types";
 
@@ -37,6 +39,18 @@ export async function entrar(_: EstadoAcao, form: FormData): Promise<EstadoAcao>
   const email = String(form.get("email") ?? "").trim();
   const senha = String(form.get("senha") ?? "");
   if (!email || !senha) return { erro: "Informe e-mail e senha." };
+
+  // Contra quem tenta adivinhar a senha: 5 tentativas a cada 15 min por IP
+  // e 10 por hora para o mesmo e-mail (vale mesmo trocando de IP)
+  const ip = ipDosCabecalhos(await headers());
+  const [porIp, porEmail] = await Promise.all([
+    limitar(`login:ip:${ip}`, 5, 15 * 60_000),
+    limitar(`login:email:${email.toLowerCase()}`, 10, 60 * 60_000),
+  ]);
+  if (!porIp.ok || !porEmail.ok) {
+    const min = Math.ceil(Math.max(porIp.tentarEmSeg, porEmail.tentarEmSeg) / 60);
+    return { erro: `Muitas tentativas. Tente de novo em ${min} min.` };
+  }
 
   const supabase = await supabaseSessao();
   const { data, error } = await supabase.auth.signInWithPassword({ email, password: senha });

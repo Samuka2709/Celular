@@ -155,5 +155,5 @@ Enquanto `NEXT_PUBLIC_LOJA_EM_TESTES` não for `false`, o site fica fora do Goog
 
 ## Limitações conhecidas
 
-- O rate limit da rota de pedido é em memória (por instância da Vercel). Barra abuso básico; para algo rígido, use Upstash/Redis.
+- O limite de tentativas (pedidos: 6 a cada 10 min; login do /admin: 5 a cada 15 min por IP) fica na memória de cada servidor. Para valer em todos, crie um Redis grátis no upstash.com e cadastre `UPSTASH_REDIS_REST_URL` e `UPSTASH_REDIS_REST_TOKEN` na Vercel.
 - WhatsApp automático depende da API oficial (WhatsApp Cloud); hoje a loja envia pelo link wa.me pronto.
