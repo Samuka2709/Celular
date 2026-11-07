@@ -52,7 +52,7 @@ export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
     <section
       aria-roledescription="carrossel"
       aria-label="Destaques"
-      className={cn(container, "pt-4 sm:pt-6")}
+      className="relative overflow-hidden border-b border-line bg-[linear-gradient(115deg,#121215_0%,#0a0a0c_45%,#141418_100%)]"
       onMouseEnter={() => setInteracao(true)}
       onMouseLeave={() => setInteracao(false)}
       onFocus={() => setInteracao(true)}
@@ -62,19 +62,21 @@ export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
         if (e.key === "ArrowLeft") ir(atual - 1);
       }}
     >
-      <div className="relative overflow-hidden rounded-3xl border border-line bg-[linear-gradient(120deg,#131317_0%,#0c0c0f_50%,#16161b_100%)] px-5 sm:px-10 lg:px-14">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(45%_70%_at_72%_62%,rgb(255_106_0/0.22),transparent_70%)]"
-        />
-        {/* Moldura geométrica com filetes laranja atrás do produto */}
-        <div aria-hidden className="pointer-events-none absolute inset-y-0 right-0 hidden w-[58%] md:block">
-          <div className="absolute right-[12%] top-[12%] h-[62%] w-[52%] rounded-[28px] border border-white/10 bg-[linear-gradient(160deg,rgb(255_255_255/0.06),transparent_60%)] [clip-path:polygon(12%_0,100%_0,100%_88%,88%_100%,0_100%,0_12%)]" />
-          <span className="absolute right-[10%] top-[10%] h-[2px] w-[22%] bg-white/50 shadow-[0_0_14px_rgb(255_255_255/0.6)]" />
-          <span className="absolute right-[3%] top-[-5%] h-[70%] w-[2px] origin-top -rotate-[32deg] bg-gradient-to-b from-transparent via-accent to-transparent shadow-[0_0_12px_rgb(255_106_0/0.8)]" />
-          <span className="absolute bottom-[-5%] right-[-2%] h-[45%] w-[2px] origin-bottom rotate-[32deg] bg-gradient-to-t from-transparent via-accent to-transparent shadow-[0_0_12px_rgb(255_106_0/0.8)]" />
-          <span className="absolute bottom-[14%] left-[12%] h-[3px] w-[70%] rounded-full bg-accent/70 blur-[2px]" />
-        </div>
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(40%_65%_at_72%_60%,rgb(255_106_0/0.22),transparent_70%)]"
+      />
+      {/* Cenário: moldura em néon e filetes laranja atrás do produto */}
+      <div aria-hidden className="pointer-events-none absolute inset-y-0 right-0 hidden w-[60%] md:block">
+        <div className="absolute left-[16%] top-[8%] h-[78%] w-[62%] [clip-path:polygon(14%_0,86%_0,100%_18%,100%_82%,86%_100%,14%_100%,0_82%,0_18%)] bg-white/[0.07]" />
+        <div className="absolute left-[17%] top-[9.5%] h-[75%] w-[60%] [clip-path:polygon(14%_0,86%_0,100%_18%,100%_82%,86%_100%,14%_100%,0_82%,0_18%)] bg-[#0d0d10]" />
+        <span className="absolute left-[24%] top-[8%] h-[3px] w-[24%] rounded-full bg-white shadow-[0_0_18px_4px_rgb(255_255_255/0.45)]" />
+        <span className="absolute right-[22%] top-[22%] h-[30%] w-[3px] rounded-full bg-white/90 shadow-[0_0_18px_4px_rgb(255_255_255/0.35)]" />
+        <span className="absolute right-[6%] top-0 h-[55%] w-[3px] origin-top rotate-[-35deg] rounded-full bg-accent shadow-[0_0_16px_3px_rgb(255_106_0/0.75)]" />
+        <span className="absolute right-[1%] bottom-[8%] h-[38%] w-[3px] origin-bottom rotate-[35deg] rounded-full bg-accent shadow-[0_0_16px_3px_rgb(255_106_0/0.75)]" />
+        <span className="absolute left-[2%] top-[30%] h-[3px] w-[10%] rotate-[-35deg] rounded-full bg-accent/80 shadow-[0_0_12px_2px_rgb(255_106_0/0.6)]" />
+      </div>
+      <div className={cn(container, "relative")}>
         <div className="relative">
         <div className="grid">
           {slides.map((s, i) => {
@@ -127,7 +129,20 @@ export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
                     ativo ? "translate-y-0 scale-100" : "translate-y-4 scale-[0.97]",
                   )}
                 >
-                  <ProductStage src={s.imagem} alt={s.imagemAlt} priority={i === 0} sizes="(min-width: 768px) 520px, 300px" />
+                  <div className="relative">
+                    {/* Pedestal com aro laranja aceso */}
+                    <div aria-hidden className="absolute bottom-[2%] left-1/2 h-[16%] w-[86%] -translate-x-1/2 rounded-[50%] bg-[radial-gradient(ellipse_at_50%_35%,#2c2c33_0%,#151519_60%,#0b0b0d_100%)] shadow-[0_0_0_2px_rgb(255_106_0/0.9),0_0_28px_6px_rgb(255_106_0/0.55),0_24px_40px_-10px_rgb(0_0_0/0.9)]" />
+                    <div aria-hidden className="absolute bottom-[9%] left-1/2 h-[10%] w-[70%] -translate-x-1/2 rounded-[50%] bg-[radial-gradient(ellipse_at_50%_40%,#34343c_0%,#1a1a1f_70%)] shadow-[inset_0_1px_0_rgb(255_255_255/0.12)]" />
+                    <ProductStage
+                      src={s.imagem}
+                      alt={s.imagemAlt}
+                      priority={i === 0}
+                      pedestal={false}
+                      className="relative -mt-2"
+                      imgClassName="scale-[0.84] translate-y-[3%] drop-shadow-[0_20px_30px_rgb(0_0_0/0.7)]"
+                      sizes="(min-width: 768px) 480px, 280px"
+                    />
+                  </div>
                 </div>
               </div>
             );
