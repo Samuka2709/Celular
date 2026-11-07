@@ -24,6 +24,18 @@ Abra http://localhost:3000.
 | Cores e fontes | `src/app/globals.css` e `src/app/layout.tsx` |
 | Textos de privacidade e trocas (revisar antes de publicar) | `src/app/politica-de-privacidade`, `src/app/trocas-e-garantia` |
 
+## Modo de testes e lançamento
+
+Enquanto a loja estiver em testes, o site fica fora do Google (`noindex` e `robots.txt`) e o checkout mostra um aviso.
+Para lançar, na Vercel vá em **Settings → Environment Variables** e crie:
+
+| Variável | Valor | Para quê |
+| --- | --- | --- |
+| `NEXT_PUBLIC_LOJA_EM_TESTES` | `false` | Libera o Google e remove os avisos de teste |
+| `NEXT_PUBLIC_SITE_URL` | `https://seudominio.com.br` | Só se usar domínio próprio (sem isso, usa o domínio da Vercel) |
+
+Depois faça um novo deploy (Deployments → Redeploy).
+
 ## Imagens
 
 As fotos atuais são ilustrações genéricas geradas por `npm run imagens` (script em `scripts/gerar-imagens.mts`).

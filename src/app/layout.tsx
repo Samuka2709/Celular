@@ -20,6 +20,7 @@ export const metadata: Metadata = {
   title: { default: `${SITE.nome} | Celulares novos e seminovos`, template: `%s | ${SITE.nome}` },
   description: SITE.descricao,
   openGraph: { locale: "pt_BR", siteName: SITE.nome, type: "website" },
+  robots: SITE.emTestes ? { index: false, follow: false, googleBot: { index: false, follow: false } } : undefined,
 };
 
 export const viewport: Viewport = {

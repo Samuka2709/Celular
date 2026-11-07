@@ -2,6 +2,7 @@ import { Mail, MessageCircle } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ClearCartOnMount, StatusIcon } from "@/components/order/OrderStatus";
+import { SITE } from "@/lib/site";
 import { botao, cn, container } from "@/lib/ui";
 
 export const metadata: Metadata = { title: "Pedido confirmado", robots: { index: false } };
@@ -27,6 +28,12 @@ export default async function SucessoPage({ searchParams }: { searchParams: Prom
         <p className="mx-auto mt-6 max-w-sm text-pretty text-muted">
           Você vai receber a confirmação por e-mail e WhatsApp.
         </p>
+        {SITE.emTestes && (
+          <p className="mx-auto mt-4 max-w-sm rounded-xl border border-accent/40 bg-accent/5 px-4 py-3 text-sm text-muted">
+            <span className="font-semibold text-ink">Pedido de teste.</span> A loja está em fase de testes e nenhum
+            pagamento foi feito.
+          </p>
+        )}
         <div className="mt-4 flex justify-center gap-4 text-subtle">
           <Mail className="size-5" aria-hidden />
           <MessageCircle className="size-5" aria-hidden />

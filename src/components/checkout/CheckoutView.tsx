@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, ChevronDown, Loader2, Lock, MapPin, ShoppingBag, Store, Truck } from "lucide-react";
+import { Check, ChevronDown, FlaskConical, Loader2, Lock, MapPin, ShoppingBag, Store, Truck } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -244,6 +244,15 @@ export function CheckoutView() {
       </div>
 
       <form onSubmit={onSubmit} noValidate className="min-w-0">
+        {SITE.emTestes && (
+          <div role="note" className="mb-6 flex gap-3 rounded-xl border border-accent/40 bg-accent/5 p-4 text-sm">
+            <FlaskConical className="mt-0.5 size-5 shrink-0 text-accent" aria-hidden />
+            <p className="text-muted">
+              <span className="font-semibold text-ink">Loja em fase de testes.</span> Os produtos e preços são de
+              exemplo e nenhum pagamento é cobrado. Para comprar de verdade, fale com a gente no WhatsApp.
+            </p>
+          </div>
+        )}
         <ol className="mb-8 flex items-center gap-2" aria-label="Etapas do checkout">
           {etapas.map((nome, i) => {
             const feito = i < etapa;

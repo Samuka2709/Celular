@@ -11,8 +11,23 @@ export const SITE = {
   avisoTopo: "Entrega em Ilhéus e região | 5% off no Pix",
   descontoPix: 0.05,
   parcelasSemJuros: 10,
-  url: "http://localhost:3000",
+  url: urlDoSite(),
+  /**
+   * Loja em fase de testes: bloqueia o Google e mostra aviso no checkout.
+   * Para lançar, crie na Vercel a variável NEXT_PUBLIC_LOJA_EM_TESTES=false e faça um novo deploy.
+   */
+  emTestes: process.env.NEXT_PUBLIC_LOJA_EM_TESTES !== "false",
 } as const;
+
+/**
+ * Endereço público do site (usado nas prévias de link do WhatsApp/redes).
+ * Ordem: NEXT_PUBLIC_SITE_URL (domínio próprio) > domínio de produção da Vercel > localhost.
+ */
+function urlDoSite() {
+  if (process.env.NEXT_PUBLIC_SITE_URL) return process.env.NEXT_PUBLIC_SITE_URL;
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+  return "http://localhost:3000";
+}
 
 export const NAV = [
   { href: "/", label: "Início" },
