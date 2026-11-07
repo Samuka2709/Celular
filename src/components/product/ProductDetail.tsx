@@ -3,7 +3,7 @@
 import { BatteryMedium, MessageCircle, PackageCheck, ShieldCheck, ShoppingBag, Store, Truck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import { variantePadrao } from "@/lib/catalog";
+import { variantePadrao } from "@/lib/produto";
 import { useCart } from "@/lib/cart";
 import { percentualDesconto } from "@/lib/format";
 import type { Product } from "@/lib/types";

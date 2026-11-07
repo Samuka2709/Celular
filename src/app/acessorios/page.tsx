@@ -4,6 +4,9 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { getProducts } from "@/lib/catalog";
 import { container } from "@/lib/ui";
 
+// Atualiza preços e estoque a cada 60 s (e na hora, quando o admin ou o webhook mudam algo)
+export const revalidate = 60;
+
 export const metadata: Metadata = {
   title: "Acessórios",
   description: "Capas, películas, carregadores, cabos, fones e power banks.",

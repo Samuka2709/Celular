@@ -1,11 +1,10 @@
 "use client";
 
-import { Check, ChevronDown, FlaskConical, Loader2, Lock, MapPin, ShoppingBag, Store, Truck } from "lucide-react";
+import { AlertCircle, Check, ChevronDown, CreditCard, FlaskConical, Loader2, Lock, MapPin, QrCode, ShoppingBag, Store, Truck } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { calcularFrete, gerarCodigoPedido } from "@/lib/catalog";
 import { useCart } from "@/lib/cart";
 import { cpfValido, formatBRL, maskCEP, maskCPF, maskWhatsApp } from "@/lib/format";
 import { SITE } from "@/lib/site";
@@ -14,8 +13,16 @@ import { Skeleton } from "../ui/Skeleton";
 import { Field, inputClasses } from "./Field";
 
 type TipoEntrega = "retirada" | "entrega";
+type FormaPagamento = "pix" | "cartao_boleto";
+
+type EstadoFrete =
+  | { status: "idle" }
+  | { status: "calculando" }
+  | { status: "ok"; taxa: number; prazo: string | null }
+  | { status: "erro"; erro: string };
 
 interface Dados {
+  formaPagamento: FormaPagamento;
   nome: string;
   whatsapp: string;
   email: string;
@@ -31,6 +38,7 @@ interface Dados {
 }
 
 const INICIAL: Dados = {
+  formaPagamento: "pix",
   nome: "",
   whatsapp: "",
   email: "",
@@ -78,6 +86,8 @@ export function CheckoutView() {
   const [cepStatus, setCepStatus] = useState<"idle" | "buscando" | "ok" | "erro">("idle");
   const [enviando, setEnviando] = useState(false);
   const [resumoAberto, setResumoAberto] = useState(false);
+  const [freteEstado, setFreteEstado] = useState<EstadoFrete>({ status: "idle" });
+  const [erroEnvio, setErroEnvio] = useState<{ erro: string; esgotado?: boolean } | null>(null);
   const numeroRef = useRef<HTMLInputElement>(null);
 
   const errosDados = useMemo(() => validarDados(d), [d]);
@@ -89,8 +99,31 @@ export function CheckoutView() {
   const entregaOk = dadosOk && Object.keys(errosEntrega).length === 0;
   const etapa = !dadosOk ? 0 : !entregaOk ? 1 : 2;
 
-  const frete = calcularFrete(d.tipoEntrega, d.cidade);
-  const total = subtotal + (frete ?? 0);
+  // Frete: grátis na retirada; na entrega, calculado no servidor pela cidade/bairro
+  useEffect(() => {
+    if (d.tipoEntrega !== "entrega" || d.cidade.trim().length < 2) {
+      setFreteEstado({ status: "idle" });
+      return;
+    }
+    const ctrl = new AbortController();
+    const t = setTimeout(() => {
+      setFreteEstado({ status: "calculando" });
+      fetch(`/api/frete?cidade=${encodeURIComponent(d.cidade)}&bairro=${encodeURIComponent(d.bairro)}`, { signal: ctrl.signal })
+        .then((r) => r.json())
+        .then((r) => setFreteEstado(r.ok ? { status: "ok", taxa: r.taxa, prazo: r.prazo } : { status: "erro", erro: r.erro }))
+        .catch((e) => {
+          if (e.name !== "AbortError") setFreteEstado({ status: "erro", erro: "Não foi possível calcular a entrega agora." });
+        });
+    }, 350);
+    return () => {
+      clearTimeout(t);
+      ctrl.abort();
+    };
+  }, [d.tipoEntrega, d.cidade, d.bairro]);
+
+  const frete = d.tipoEntrega === "retirada" ? 0 : freteEstado.status === "ok" ? freteEstado.taxa : null;
+  const base = d.formaPagamento === "pix" ? subtotalPix : subtotal;
+  const total = base + (frete ?? 0);
   const totalPix = subtotalPix + (frete ?? 0);
 
   // ViaCEP: busca o endereço quando o CEP tem 8 números
@@ -140,12 +173,44 @@ export function CheckoutView() {
       document.getElementById(primeiro)?.focus();
       return;
     }
+    if (d.tipoEntrega === "entrega" && freteEstado.status === "erro") {
+      document.getElementById("cidade")?.focus();
+      return;
+    }
     setEnviando(true);
-    // BACKEND: aqui entra o POST /api/checkout, que cria o pedido, reserva o estoque
-    // e devolve o init_point do Mercado Pago para redirecionar o cliente.
-    await new Promise((r) => setTimeout(r, 900));
-    const codigo = gerarCodigoPedido();
-    router.push(`/pedido/sucesso?pedido=${codigo}`);
+    setErroEnvio(null);
+    try {
+      // O servidor recalcula preços e frete pelo banco; aqui só vão variação e quantidade.
+      const resp = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nome: d.nome,
+          email: d.email,
+          whatsapp: d.whatsapp,
+          cpf: d.cpf,
+          tipoEntrega: d.tipoEntrega,
+          formaPagamento: d.formaPagamento,
+          endereco:
+            d.tipoEntrega === "entrega"
+              ? { cep: d.cep, rua: d.rua, numero: d.numero, complemento: d.complemento, bairro: d.bairro, cidade: d.cidade, uf: d.uf }
+              : undefined,
+          itens: items.map((i) => ({ variantId: i.variantId, quantidade: i.quantidade })),
+        }),
+      });
+      const r = await resp.json();
+      if (!r.ok) {
+        setErroEnvio({ erro: r.erro ?? "Não foi possível continuar.", esgotado: r.esgotado });
+        setEnviando(false);
+        return;
+      }
+      // Vai para o Mercado Pago (ou para a página de sucesso no modo demonstração)
+      if (/^https?:\/\//.test(r.redirect)) window.location.href = r.redirect;
+      else router.push(r.redirect);
+    } catch {
+      setErroEnvio({ erro: "Sem conexão. Confira sua internet e tente de novo." });
+      setEnviando(false);
+    }
   }
 
   if (!hydrated) {
@@ -194,18 +259,38 @@ export function CheckoutView() {
           <dt className="text-muted">Subtotal</dt>
           <dd>{formatBRL(subtotal)}</dd>
         </div>
-        <div className="flex justify-between">
+        {d.formaPagamento === "pix" && subtotal > subtotalPix && (
+          <div className="flex justify-between text-accent">
+            <dt>Desconto Pix</dt>
+            <dd>-{formatBRL(subtotal - subtotalPix)}</dd>
+          </div>
+        )}
+        <div className="flex justify-between gap-4">
           <dt className="text-muted">Entrega</dt>
-          <dd>{frete === null ? <span className="text-muted">Informe o CEP</span> : frete === 0 ? "Grátis" : formatBRL(frete)}</dd>
+          <dd className="text-right">
+            {d.tipoEntrega === "retirada" ? (
+              "Grátis"
+            ) : freteEstado.status === "ok" ? (
+              freteEstado.taxa === 0 ? "Grátis" : formatBRL(freteEstado.taxa)
+            ) : freteEstado.status === "calculando" ? (
+              <span className="text-muted">Calculando</span>
+            ) : freteEstado.status === "erro" ? (
+              <span className="text-danger">Indisponível</span>
+            ) : (
+              <span className="text-muted">Informe o CEP</span>
+            )}
+          </dd>
         </div>
         <div className="flex items-baseline justify-between border-t border-line pt-3">
-          <dt className="font-semibold">Total</dt>
+          <dt className="font-semibold">Total{d.formaPagamento === "pix" ? " no Pix" : ""}</dt>
           <dd className="font-display text-2xl font-semibold">{formatBRL(total)}</dd>
         </div>
-        <div className="flex justify-between text-accent">
-          <dt>No Pix</dt>
-          <dd className="font-semibold">{formatBRL(totalPix)}</dd>
-        </div>
+        {d.formaPagamento !== "pix" && (
+          <div className="flex justify-between text-accent">
+            <dt>No Pix sairia</dt>
+            <dd className="font-semibold">{formatBRL(totalPix)}</dd>
+          </div>
+        )}
       </dl>
     </>
   );
@@ -510,6 +595,23 @@ export function CheckoutView() {
                   {...aria("cidade")}
                 />
               </Field>
+              <div className="sm:col-span-6" aria-live="polite">
+                {freteEstado.status === "ok" && (
+                  <p className="flex gap-2.5 rounded-xl bg-canvas p-4 text-sm text-muted">
+                    <Truck className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden />
+                    <span>
+                      Entrega: <span className="font-semibold text-ink">{freteEstado.taxa === 0 ? "grátis" : formatBRL(freteEstado.taxa)}</span>
+                      {freteEstado.prazo && <>. {freteEstado.prazo}.</>}
+                    </span>
+                  </p>
+                )}
+                {freteEstado.status === "erro" && (
+                  <p className="flex gap-2.5 rounded-xl border border-danger/40 p-4 text-sm text-danger">
+                    <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden />
+                    {freteEstado.erro}
+                  </p>
+                )}
+              </div>
             </div>
           )}
         </section>
@@ -518,15 +620,85 @@ export function CheckoutView() {
           <h2 id="sec-pagamento" className="font-display text-xl font-semibold">
             Pagamento
           </h2>
+          <fieldset className="mt-5">
+            <legend className="sr-only">Forma de pagamento</legend>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {(
+                [
+                  {
+                    valor: "pix",
+                    titulo: `Pix · ${Math.round(SITE.descontoPix * 100)}% off`,
+                    texto: "Aprovação na hora.",
+                    icone: QrCode,
+                  },
+                  {
+                    valor: "cartao_boleto",
+                    titulo: "Cartão ou boleto",
+                    texto: `Cartão em até ${SITE.parcelasSemJuros}x sem juros ou boleto.`,
+                    icone: CreditCard,
+                  },
+                ] as const
+              ).map((op) => {
+                const ativo = d.formaPagamento === op.valor;
+                return (
+                  <label
+                    key={op.valor}
+                    className={cn(
+                      "relative flex cursor-pointer gap-3 rounded-xl border p-4 transition-[border-color,background-color] duration-150",
+                      ativo ? "border-accent bg-accent/5" : "border-line-strong hover:border-muted",
+                      "has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-accent",
+                    )}
+                  >
+                    <input
+                      type="radio"
+                      name="formaPagamento"
+                      value={op.valor}
+                      checked={ativo}
+                      onChange={() => set("formaPagamento", op.valor)}
+                      className="sr-only"
+                    />
+                    <op.icone className={cn("mt-0.5 size-5 shrink-0", ativo ? "text-accent" : "text-muted")} aria-hidden />
+                    <span>
+                      <span className="block font-medium">{op.titulo}</span>
+                      <span className="mt-0.5 block text-sm text-muted">{op.texto}</span>
+                    </span>
+                    <span
+                      aria-hidden
+                      className={cn(
+                        "ml-auto mt-0.5 grid size-5 shrink-0 place-items-center rounded-full border-2 transition-colors duration-150",
+                        ativo ? "border-accent" : "border-line-strong",
+                      )}
+                    >
+                      <span className={cn("size-2.5 rounded-full bg-accent transition-transform duration-150", ativo ? "scale-100" : "scale-0")} />
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+          </fieldset>
           <div className="mt-4 flex gap-3 rounded-xl bg-canvas p-4">
             <Lock className="mt-0.5 size-5 shrink-0 text-accent" aria-hidden />
             <p className="text-sm leading-relaxed text-muted">
-              Ao continuar, você vai para o <span className="text-ink">ambiente seguro do Mercado Pago</span> e escolhe
-              como pagar: <span className="text-ink">Pix</span> (com {Math.round(SITE.descontoPix * 100)}% de desconto),{" "}
-              <span className="text-ink">cartão</span> em até {SITE.parcelasSemJuros}x sem juros ou{" "}
-              <span className="text-ink">boleto</span>. Não guardamos dados do seu cartão.
+              Você termina o pagamento no <span className="text-ink">ambiente seguro do Mercado Pago</span>. Seus itens
+              ficam reservados por 30 minutos. Não guardamos dados do seu cartão.
             </p>
           </div>
+          {erroEnvio && (
+            <div role="alert" className="mt-4 flex gap-2.5 rounded-xl border border-danger/40 p-4 text-sm text-danger">
+              <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden />
+              <span>
+                {erroEnvio.erro}
+                {erroEnvio.esgotado && (
+                  <>
+                    {" "}
+                    <Link href="/carrinho" className="font-semibold underline underline-offset-2">
+                      Revisar carrinho
+                    </Link>
+                  </>
+                )}
+              </span>
+            </div>
+          )}
           <button type="submit" disabled={enviando} className={botao("primario", "lg", "mt-6 w-full")}>
             {enviando ? (
               <>

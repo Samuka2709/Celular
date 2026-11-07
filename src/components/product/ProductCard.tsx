@@ -1,6 +1,6 @@
 import { BatteryMedium, MessageCircle } from "lucide-react";
 import Link from "next/link";
-import { estoqueTotal, imagemDaCor, variantePadrao } from "@/lib/catalog";
+import { estoqueTotal, imagemDaCor, variantePadrao } from "@/lib/produto";
 import { percentualDesconto } from "@/lib/format";
 import type { Product } from "@/lib/types";
 import { botao, cn } from "@/lib/ui";

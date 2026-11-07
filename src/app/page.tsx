@@ -8,6 +8,9 @@ import { SITE } from "@/lib/site";
 import type { Product } from "@/lib/types";
 import { cn, container } from "@/lib/ui";
 
+// Atualiza preços e estoque a cada 60 s (e na hora, quando o admin ou o webhook mudam algo)
+export const revalidate = 60;
+
 function slide(p: Product, linha1: string, linha2: string, subtitulo: string): HeroSlide {
   const v = variantePadrao(p);
   const img = imagemDaCor(p, v.cor);
@@ -24,30 +27,48 @@ function slide(p: Product, linha1: string, linha2: string, subtitulo: string): H
 
 export default async function Home() {
   const [produtos, marcas] = await Promise.all([getProducts(), getBrands()]);
-  const porSlug = (s: string) => produtos.find((p) => p.slug === s)!;
+  const celulares = produtos.filter((p) => p.categoria === "celular");
+  const disponivel = (p: Product) => p.variants.some((v) => v.estoque > 0);
+  const desconto = (p: Product) => {
+    const v = variantePadrao(p);
+    return v.precoAntigo ? 1 - v.preco / v.precoAntigo : 0;
+  };
+  const porVendas = (a: Product, b: Product) => b.vendas - a.vendas;
+
+  // Escolhe os produtos do carrossel e da oferta a partir do catálogo (do banco ou de exemplo)
+  const novoDestaque =
+    celulares.filter((p) => p.condicao === "novo" && p.destaque && disponivel(p)).sort(porVendas)[0] ??
+    celulares.filter((p) => p.condicao === "novo" && disponivel(p)).sort(porVendas)[0];
+  const seminovoDestaque = celulares.filter((p) => p.condicao === "seminovo" && disponivel(p)).sort(porVendas)[0];
+  // Oferta da semana: o celular com maior desconto, preferindo aparelhos novos
+  const comDesconto = celulares.filter((p) => disponivel(p) && desconto(p) > 0).sort((a, b) => desconto(b) - desconto(a));
+  const emOferta = comDesconto.find((p) => p.condicao === "novo") ?? comDesconto[0];
+  const pixDestaque = emOferta ?? celulares.filter(disponivel).sort(porVendas)[1];
 
   const slides = [
-    slide(
-      porSlug("iphone-16-pro"),
-      "Novos e lacrados,",
-      "com garantia.",
-      "Aparelhos com nota fiscal e garantia do fabricante. Receba em casa ou retire hoje na loja.",
-    ),
-    slide(
-      porSlug("iphone-13-seminovo"),
-      "Seminovo revisado,",
-      "bateria informada.",
-      "Cada aparelho é testado pela nossa equipe e sai com 90 dias de garantia da loja.",
-    ),
-    slide(
-      porSlug("galaxy-s24"),
-      "Pague no Pix",
-      "e economize 5%.",
-      "Ou parcele em até 10x sem juros no cartão. Tudo no ambiente seguro do Mercado Pago.",
-    ),
-  ];
+    novoDestaque &&
+      slide(
+        novoDestaque,
+        "Novos e lacrados,",
+        "com garantia.",
+        "Aparelhos com nota fiscal e garantia do fabricante. Receba em casa ou retire hoje na loja.",
+      ),
+    seminovoDestaque &&
+      slide(
+        seminovoDestaque,
+        "Seminovo revisado,",
+        "bateria informada.",
+        "Cada aparelho é testado pela nossa equipe e sai com 90 dias de garantia da loja.",
+      ),
+    pixDestaque &&
+      slide(
+        pixDestaque,
+        "Pague no Pix",
+        "e economize 5%.",
+        "Ou parcele em até 10x sem juros no cartão. Tudo no ambiente seguro do Mercado Pago.",
+      ),
+  ].filter((x): x is HeroSlide => !!x);
 
-  const celulares = produtos.filter((p) => p.categoria === "celular");
   const maisVendidos = celulares
     .filter((p) => p.condicao === "novo")
     .sort((a, b) => b.vendas - a.vendas)
@@ -57,7 +78,7 @@ export default async function Home() {
   return (
     <>
       <h1 className="sr-only">{SITE.nome}: celulares novos e seminovos em Ilhéus e região</h1>
-      <HeroCarousel slides={slides} />
+      {slides.length > 0 && <HeroCarousel slides={slides} />}
       <Benefits />
 
       <section aria-labelledby="mais-vendidos" className={cn(container, "py-16 sm:py-24")}>
@@ -67,7 +88,7 @@ export default async function Home() {
 
       <Brands marcas={marcas} />
 
-      <OfferBanner product={porSlug("galaxy-s24")} />
+      {emOferta && <OfferBanner product={emOferta} />}
 
       <section aria-labelledby="seminovos" className="bg-paper py-16 sm:py-24">
         <div className={container}>

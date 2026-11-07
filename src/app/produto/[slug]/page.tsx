@@ -8,6 +8,9 @@ import { getProductBySlug, getProducts, getRelated, variantePadrao } from "@/lib
 import { formatBRL } from "@/lib/format";
 import { cn, container } from "@/lib/ui";
 
+// Atualiza preços e estoque a cada 60 s (e na hora, quando o admin ou o webhook mudam algo)
+export const revalidate = 60;
+
 type Params = { params: Promise<{ slug: string }> };
 
 export async function generateStaticParams() {

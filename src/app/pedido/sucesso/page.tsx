@@ -7,8 +7,9 @@ import { botao, cn, container } from "@/lib/ui";
 
 export const metadata: Metadata = { title: "Pedido confirmado", robots: { index: false } };
 
-export default async function SucessoPage({ searchParams }: { searchParams: Promise<{ pedido?: string }> }) {
-  const { pedido } = await searchParams;
+export default async function SucessoPage({ searchParams }: { searchParams: Promise<{ pedido?: string; t?: string; demo?: string }> }) {
+  const { pedido, t, demo } = await searchParams;
+  const token = t && /^[0-9a-f-]{36}$/i.test(t) ? t : null;
   const codigo = pedido && /^PED-[A-Z0-9]{5}$/i.test(pedido) ? pedido.toUpperCase() : null;
 
   return (
@@ -28,7 +29,7 @@ export default async function SucessoPage({ searchParams }: { searchParams: Prom
         <p className="mx-auto mt-6 max-w-sm text-pretty text-muted">
           Você vai receber a confirmação por e-mail e WhatsApp.
         </p>
-        {SITE.emTestes && (
+        {(SITE.emTestes || demo) && (
           <p className="mx-auto mt-4 max-w-sm rounded-xl border border-accent/40 bg-accent/5 px-4 py-3 text-sm text-muted">
             <span className="font-semibold text-ink">Pedido de teste.</span> A loja está em fase de testes e nenhum
             pagamento foi feito.
@@ -40,7 +41,7 @@ export default async function SucessoPage({ searchParams }: { searchParams: Prom
         </div>
         <div className="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
           {codigo && (
-            <Link href={`/pedido/${codigo}`} className={botao("primario", "lg")}>
+            <Link href={`/pedido/${codigo}${token ? `?t=${token}` : ""}`} className={botao("primario", "lg")}>
               Acompanhar pedido
             </Link>
           )}

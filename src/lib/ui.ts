@@ -2,7 +2,7 @@ export function cn(...classes: (string | false | null | undefined)[]) {
   return classes.filter(Boolean).join(" ");
 }
 
-type Variante = "primario" | "secundario" | "fantasma" | "whatsapp" | "claro";
+type Variante = "primario" | "secundario" | "fantasma" | "whatsapp" | "claro" | "perigo";
 type Tamanho = "sm" | "md" | "lg" | "icone";
 
 const base =
@@ -17,6 +17,7 @@ const variantes: Record<Variante, string> = {
   fantasma: "text-ink hover:bg-card-2",
   whatsapp: "border border-whatsapp/50 bg-whatsapp/10 text-ink hover:bg-whatsapp/20 hover:border-whatsapp",
   claro: "bg-canvas text-ink hover:bg-card-2",
+  perigo: "text-danger hover:bg-danger/10",
 };
 
 const tamanhos: Record<Tamanho, string> = {

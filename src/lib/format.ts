@@ -78,3 +78,7 @@ export function cpfValido(cpf: string): boolean {
   };
   return calc(9) === Number(d[9]) && calc(10) === Number(d[10]);
 }
+
+/** 1299.9 -> "1299,90" (valor para campo de formulário) */
+export const paraCampo = (n: number | string | null) =>
+  n === null || n === "" ? "" : Number(n).toFixed(2).replace(".", ",");

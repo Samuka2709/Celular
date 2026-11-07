@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
+import { SomenteNaLoja } from "@/components/layout/SomenteNaLoja";
 import { WhatsAppFloat } from "@/components/layout/WhatsAppFloat";
 import { CartProvider } from "@/lib/cart";
 import { SITE } from "@/lib/site";
@@ -39,17 +40,21 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           Pular para o conteúdo
         </a>
         <CartProvider>
-          <div className="bg-accent text-canvas">
-            <p className="mx-auto max-w-7xl px-4 py-1.5 text-center text-xs font-semibold sm:text-[13px]">
-              {SITE.avisoTopo}
-            </p>
-          </div>
-          <Header />
+          <SomenteNaLoja>
+            <div className="bg-accent text-canvas">
+              <p className="mx-auto max-w-7xl px-4 py-1.5 text-center text-xs font-semibold sm:text-[13px]">
+                {SITE.avisoTopo}
+              </p>
+            </div>
+            <Header />
+          </SomenteNaLoja>
           <main id="conteudo" tabIndex={-1} className="outline-none">
             {children}
           </main>
-          <Footer />
-          <WhatsAppFloat />
+          <SomenteNaLoja>
+            <Footer />
+            <WhatsAppFloat />
+          </SomenteNaLoja>
         </CartProvider>
       </body>
     </html>
