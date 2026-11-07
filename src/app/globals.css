@@ -7,8 +7,11 @@
   --color-card-2: #1d1d22;
   --color-line: #26262c;
   --color-line-strong: #34343c;
-  --color-paper: #f5f5f7;
-  --color-paper-line: #e2e2e7;
+  --color-paper: #f3eee8;
+  --color-paper-card: #fbf8f4;
+  --color-paper-muted: #57534e;
+  --color-paper-soft: #44403c;
+  --color-paper-line: #e3dacf;
   --color-ink: #f4f4f5;
   --color-muted: #a1a1aa;
   --color-subtle: #71717a;

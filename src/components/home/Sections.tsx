@@ -30,7 +30,7 @@ export function SectionHeader({
           {titulo}
         </h2>
         {descricao && (
-          <p className={cn("mt-2 max-w-xl text-pretty", claro ? "text-[#52525b]" : "text-muted")}>{descricao}</p>
+          <p className={cn("mt-2 max-w-xl text-pretty", claro ? "text-paper-muted" : "text-muted")}>{descricao}</p>
         )}
       </div>
       {href && (
@@ -94,10 +94,10 @@ export function Brands({ marcas }: { marcas: { marca: string; total: number }[] 
             <li key={m.marca}>
               <Link
                 href={`/celulares?marca=${encodeURIComponent(m.marca)}`}
-                className="group relative flex h-32 flex-col justify-between overflow-hidden rounded-2xl border border-paper-line bg-white p-5 transition-[border-color,transform,box-shadow] duration-200 ease-out hover:-translate-y-1 hover:border-accent/50 hover:shadow-[0_14px_28px_-18px_rgb(194_65_12/0.6)] sm:h-40"
+                className="group relative flex h-32 flex-col justify-between overflow-hidden rounded-2xl border border-paper-line bg-paper-card p-5 transition-[border-color,transform,box-shadow] duration-200 ease-out hover:-translate-y-1 hover:border-accent/50 hover:shadow-[0_14px_28px_-18px_rgb(194_65_12/0.6)] sm:h-40"
               >
                 <span className="font-display text-2xl font-bold tracking-tight sm:text-3xl">{m.marca}</span>
-                <span className="flex items-center justify-between text-sm text-[#52525b]">
+                <span className="flex items-center justify-between text-sm text-paper-muted">
                   {m.total} {m.total === 1 ? "modelo" : "modelos"}
                   <ArrowUpRight
                     className="size-5 text-accent-ink transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"

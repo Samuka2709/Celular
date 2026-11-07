@@ -78,7 +78,7 @@ export default async function Home() {
                 descricao="Testamos tela, câmeras, biometria, áudio e bateria antes de anunciar. A saúde da bateria aparece em cada aparelho."
                 href="/celulares?condicao=seminovo"
               />
-          <ul className="-mt-2 mb-10 flex flex-wrap gap-x-8 gap-y-3 text-sm text-[#3f3f46]">
+          <ul className="-mt-2 mb-10 flex flex-wrap gap-x-8 gap-y-3 text-sm text-paper-soft">
             <li className="inline-flex items-center gap-2">
               <BadgeCheck className="size-5 text-accent-ink" aria-hidden />
               Tela, câmeras e biometria testadas

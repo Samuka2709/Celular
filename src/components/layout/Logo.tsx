@@ -11,7 +11,7 @@ export function Logo({ className }: { className?: string }) {
         <rect x="10.5" y="6.5" width="11" height="19" rx="3" fill="none" stroke="var(--color-canvas)" strokeWidth="2.2" />
         <circle cx="16" cy="21.5" r="1.3" fill="var(--color-canvas)" />
       </svg>
-      <span className="font-display text-lg font-bold tracking-tight text-ink">{SITE.nome}</span>
+      <span className="whitespace-nowrap font-display text-lg font-bold tracking-tight text-ink">{SITE.nome}</span>
     </Link>
   );
 }
