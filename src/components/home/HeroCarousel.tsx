@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowRight, Lock, MessageCircle, Pause, Play, ShieldCheck, Truck } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { formatBRL } from "@/lib/format";
@@ -26,7 +27,13 @@ const SELOS = [
   { icone: MessageCircle, linha1: "Atendimento", linha2: "WhatsApp" },
 ];
 
-export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
+export interface HeroAcessorio {
+  src: string;
+  alt: string;
+}
+
+export function HeroCarousel({ slides, acessorios = [] }: { slides: HeroSlide[]; acessorios?: HeroAcessorio[] }) {
+  const [esq, dir] = acessorios;
   const [atual, setAtual] = useState(0);
   const [pausado, setPausado] = useState(false);
   const [interacao, setInteracao] = useState(false);
@@ -142,6 +149,17 @@ export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
                       imgClassName="scale-[0.84] translate-y-[3%] drop-shadow-[0_20px_30px_rgb(0_0_0/0.7)]"
                       sizes="(min-width: 768px) 480px, 280px"
                     />
+                    {/* Acessórios ao lado do celular, sobre o mesmo pedestal */}
+                    {esq && (
+                      <div className="absolute bottom-[9%] left-[0%] aspect-square w-[44%]">
+                        <Image src={esq.src} alt={esq.alt} fill sizes="(min-width: 768px) 200px, 120px" className="object-contain drop-shadow-[0_16px_20px_rgb(0_0_0/0.75)]" />
+                      </div>
+                    )}
+                    {dir && (
+                      <div className="absolute bottom-[9%] right-[1%] aspect-square w-[34%]">
+                        <Image src={dir.src} alt={dir.alt} fill sizes="(min-width: 768px) 150px, 90px" className="object-contain drop-shadow-[0_16px_20px_rgb(0_0_0/0.75)]" />
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

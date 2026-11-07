@@ -1,5 +1,5 @@
 import { BadgeCheck, BatteryMedium, ShieldCheck } from "lucide-react";
-import { HeroCarousel, type HeroSlide } from "@/components/home/HeroCarousel";
+import { HeroCarousel, type HeroAcessorio, type HeroSlide } from "@/components/home/HeroCarousel";
 import { OfferBanner } from "@/components/home/OfferBanner";
 import { Benefits, Brands, SectionHeader, Testimonials } from "@/components/home/Sections";
 import { ProductGrid } from "@/components/product/ProductCard";
@@ -69,6 +69,16 @@ export default async function Home() {
       ),
   ].filter((x): x is HeroSlide => !!x);
 
+  // Acessórios que aparecem junto do celular no topo (fone à esquerda, carregador/power bank à direita)
+  const acessorioPor = (termo: RegExp) =>
+    produtos.find((p) => p.categoria === "acessorio" && termo.test(p.nome) && p.images.length > 0);
+  const acessoriosHero = [acessorioPor(/fone/i), acessorioPor(/power|carregador/i)]
+    .filter((p): p is Product => !!p)
+    .map((p): HeroAcessorio => {
+      const img = imagemDaCor(p, variantePadrao(p).cor);
+      return { src: img.url, alt: img.alt };
+    });
+
   const maisVendidos = celulares
     .filter((p) => p.condicao === "novo")
     .sort((a, b) => b.vendas - a.vendas)
@@ -78,7 +88,7 @@ export default async function Home() {
   return (
     <>
       <h1 className="sr-only">{SITE.nome}: celulares novos e seminovos em Ilhéus e região</h1>
-      {slides.length > 0 && <HeroCarousel slides={slides} />}
+      {slides.length > 0 && <HeroCarousel slides={slides} acessorios={acessoriosHero} />}
       <Benefits />
 
       <section aria-labelledby="mais-vendidos" className={cn(container, "py-16 sm:py-24")}>
