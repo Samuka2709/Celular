@@ -1,6 +1,7 @@
--- Seed gerado por scripts/gerar-seed.mts. Rode depois das migrations.
+-- 5. PRODUTOS DE EXEMPLO (opcional). Gerado por scripts/gerar-seed.mts.
+-- Pule este arquivo se for cadastrar os produtos reais direto no /admin.
 -- Pode rodar de novo: produtos com o mesmo slug são substituídos.
-begin;
+-- As fotos apontam para as imagens ilustrativas em public/produtos do site.
 
 delete from public.products where slug in ('iphone-15', 'iphone-16-pro', 'galaxy-s24', 'galaxy-a55', 'galaxy-a15', 'moto-g84', 'motorola-edge-50-fusion', 'redmi-note-13', 'poco-x6-pro', 'xiaomi-14t', 'iphone-13-seminovo', 'iphone-12-seminovo', 'galaxy-s23-seminovo', 'iphone-11-seminovo', 'moto-g54-seminovo', 'capa-silicone', 'carregador-turbo-25w', 'fone-bluetooth', 'cabo-usb-c', 'pelicula-vidro', 'power-bank-10000');
 
@@ -369,15 +370,3 @@ insert into public.product_images (product_id, url, cor, alt, ordem)
     ('/produtos/power-bank-10000/preto-verso.webp', 'Preto', 'Power bank 10.000 mAh na cor Preto, vista traseira', 0),
     ('/produtos/power-bank-10000/branco-verso.webp', 'Branco', 'Power bank 10.000 mAh na cor Branco, vista traseira', 0)
   ) as x(url, cor, alt, ordem);
-
--- Taxas de entrega de exemplo (edite no /admin/entrega)
-insert into public.delivery_zones (cidade, bairro, taxa, prazo) values
-  ('Ilhéus', null, 12, 'No mesmo dia para pedidos pagos até 15h'),
-  ('Itabuna', null, 25, 'Em até 1 dia útil'),
-  ('Uruçuca', null, 25, 'Em até 1 dia útil'),
-  ('Itacaré', null, 35, 'Em até 2 dias úteis'),
-  ('Una', null, 35, 'Em até 2 dias úteis'),
-  ('Canavieiras', null, 35, 'Em até 2 dias úteis')
-on conflict do nothing;
-
-commit;

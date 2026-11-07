@@ -3,7 +3,7 @@ import type { NextConfig } from "next";
 // Fotos enviadas pelo /admin ficam no Supabase Storage
 const supabaseHost = (() => {
   try {
-    return process.env.SUPABASE_URL ? new URL(process.env.SUPABASE_URL).hostname : null;
+    return process.env.NEXT_PUBLIC_SUPABASE_URL ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname : null;
   } catch {
     return null;
   }

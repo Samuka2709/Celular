@@ -27,8 +27,8 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           <div className="mt-6 rounded-2xl border border-line bg-card p-5 text-sm leading-relaxed text-muted">
             <p className="font-semibold text-ink">O banco de dados ainda não está ligado.</p>
             <p className="mt-2">
-              Crie o projeto no Supabase e preencha as variáveis <code className="text-ink">SUPABASE_URL</code> e{" "}
-              <code className="text-ink">SUPABASE_ANON_KEY</code> (passo a passo no README). Enquanto isso, a loja funciona
+              Crie o projeto no Supabase e preencha as variáveis <code className="text-ink">NEXT_PUBLIC_SUPABASE_URL</code> e{" "}
+              <code className="text-ink">NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY</code> (passo a passo no README). Enquanto isso, a loja funciona
               com os dados de exemplo.
             </p>
           </div>

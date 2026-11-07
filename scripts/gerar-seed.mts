@@ -1,4 +1,4 @@
-// Gera supabase/seed.sql a partir dos produtos de exemplo (src/lib/data/products.ts).
+// Gera a migration de produtos de exemplo (última migration, opcional) a partir de src/lib/data/products.ts.
 // Uso: npm run seed:gerar
 import { writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -12,9 +12,10 @@ const q = (v: unknown): string => {
 const j = (v: unknown) => (v === null || v === undefined ? "null" : `${q(JSON.stringify(v))}::jsonb`);
 
 const linhas: string[] = [
-  "-- Seed gerado por scripts/gerar-seed.mts. Rode depois das migrations.",
+  "-- 5. PRODUTOS DE EXEMPLO (opcional). Gerado por scripts/gerar-seed.mts.",
+  "-- Pule este arquivo se for cadastrar os produtos reais direto no /admin.",
   "-- Pode rodar de novo: produtos com o mesmo slug são substituídos.",
-  "begin;",
+  "-- As fotos apontam para as imagens ilustrativas em public/produtos do site.",
   "",
   `delete from public.products where slug in (${PRODUCTS.map((p) => q(p.slug)).join(", ")});`,
   "",
@@ -50,21 +51,6 @@ for (const p of PRODUCTS) {
   );
 }
 
-linhas.push(
-  "-- Taxas de entrega de exemplo (edite no /admin/entrega)",
-  "insert into public.delivery_zones (cidade, bairro, taxa, prazo) values",
-  "  ('Ilhéus', null, 12, 'No mesmo dia para pedidos pagos até 15h'),",
-  "  ('Itabuna', null, 25, 'Em até 1 dia útil'),",
-  "  ('Uruçuca', null, 25, 'Em até 1 dia útil'),",
-  "  ('Itacaré', null, 35, 'Em até 2 dias úteis'),",
-  "  ('Una', null, 35, 'Em até 2 dias úteis'),",
-  "  ('Canavieiras', null, 35, 'Em até 2 dias úteis')",
-  "on conflict do nothing;",
-  "",
-  "commit;",
-  "",
-);
-
-const destino = path.join(process.cwd(), "supabase", "seed.sql");
+const destino = path.join(process.cwd(), "supabase", "migrations", "20261107000005_produtos_exemplo.sql");
 await writeFile(destino, linhas.join("\n"), "utf8");
-console.log(`seed.sql gerado com ${PRODUCTS.length} produtos em ${destino}`);
+console.log(`Migration de exemplo gerada com ${PRODUCTS.length} produtos em ${destino}`);

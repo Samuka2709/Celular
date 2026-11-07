@@ -48,26 +48,35 @@ Faça na ordem. Use primeiro as **credenciais de teste** do Mercado Pago.
 ### 1. Supabase (banco de dados)
 
 1. Crie uma conta em [supabase.com](https://supabase.com) e um **New project** (região **South America (São Paulo)**). Guarde a senha do banco.
-2. Vá em **SQL Editor > New query**, cole e rode, **nesta ordem**, o conteúdo de:
-   1. `supabase/migrations/20261107000001_schema.sql` (tabelas)
-   2. `supabase/migrations/20261107000002_rls.sql` (segurança e bucket de fotos)
-   3. `supabase/migrations/20261107000003_estoque.sql` (funções de estoque e job do pg_cron)
-   4. `supabase/seed.sql` (21 produtos de exemplo e taxas de entrega)
+2. Vá em **SQL Editor > New query**. Para cada arquivo abaixo, **nesta ordem**: abra o arquivo, copie tudo, cole numa query nova e clique **Run**. Espere o "Success" antes de passar para o próximo.
 
-   Se o passo 3 reclamar do `pg_cron`, ative em **Database > Extensions > pg_cron** e rode de novo.
-3. Confira em **Database > Cron Jobs** (ou `select * from cron.job;`) que o job `expirar-reservas` existe.
+   | Ordem | Arquivo em `supabase/migrations/` | O que faz |
+   | --- | --- | --- |
+   | 1 | `20261107000001_schema.sql` | Tabelas do catálogo, estoque, pedidos, entrega e admins |
+   | 2 | `20261107000002_rls.sql` | RLS, policies e bucket de fotos |
+   | 3 | `20261107000003_estoque.sql` | Funções de reserva e baixa de estoque, job do pg_cron |
+   | 4 | `20261107000004_taxas_entrega.sql` | Taxas de entrega iniciais (Ilhéus e região) |
+   | 5 | `20261107000005_produtos_exemplo.sql` | **Opcional:** 21 produtos de exemplo. Pule se for cadastrar os reais no /admin |
+
+   Se o arquivo 3 reclamar do `pg_cron`, ative em **Database > Extensions > pg_cron** e rode o 3 de novo (pode rodar mais de uma vez).
+3. Confira que o job existe: rode `select jobname, schedule from cron.job;` e veja a linha `expirar-reservas`.
 4. **Bloqueie cadastros abertos:** **Authentication > Sign In / Providers > Email** e desligue **Allow new users to sign up**. Só você cria os usuários do painel.
 5. **Crie o primeiro admin:**
-   - **Authentication > Users > Add user > Create new user**, com e-mail e senha, marcando **Auto Confirm User**.
-   - No **SQL Editor**, rode (trocando o e-mail):
-     ```sql
-     insert into public.admins (user_id)
-     select id from auth.users where email = 'seu-email@exemplo.com';
-     ```
-6. Pegue as chaves em **Project Settings > API Keys** (se aparecerem as chaves novas, use a aba **Legacy API keys**):
-   - Project URL → `SUPABASE_URL`
-   - `anon` `public` → `SUPABASE_ANON_KEY`
-   - `service_role` `secret` → `SUPABASE_SERVICE_ROLE_KEY` (**nunca** coloque essa chave no navegador ou no GitHub)
+   1. **Authentication > Users > Add user > Create new user**.
+   2. Preencha e-mail e senha, deixe marcado **Auto Confirm User** e clique **Create user**.
+   3. No **SQL Editor**, rode (trocando o e-mail):
+      ```sql
+      insert into public.admins (user_id)
+      select id from auth.users where email = 'seu-email@exemplo.com';
+      ```
+      Deve aparecer "Success" com 1 linha afetada. Se for 0, o e-mail está diferente do cadastrado.
+   4. Confira: `select u.email from public.admins a join auth.users u on u.id = a.user_id;`
+6. Pegue as chaves em **Project Settings > API Keys**:
+   - Project URL → `NEXT_PUBLIC_SUPABASE_URL`
+   - **Publishable key** (`sb_publishable_...`) → `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+   - **Secret key** (`sb_secret_...`) → `SUPABASE_SECRET_KEY`. **Nunca** com `NEXT_PUBLIC_` e nunca no GitHub.
+
+   O código que usa a chave secreta importa `server-only`: se algum componente do navegador tentar usá-la, o build falha.
 
 ### 2. Mercado Pago (pagamento)
 

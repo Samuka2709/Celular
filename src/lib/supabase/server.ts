@@ -1,23 +1,24 @@
+import "server-only";
 import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { env } from "../env";
 
 /**
- * Cliente com a service_role: ignora RLS. Use SÓ no servidor, para criar pedidos,
+ * Cliente com a chave secreta (sb_secret_...): ignora RLS. Use SÓ no servidor, para criar pedidos,
  * processar o webhook e mostrar o acompanhamento do pedido (com token).
  */
 export function supabaseServico() {
-  if (!env.supabaseUrl || !env.supabaseServiceKey) throw new Error("Supabase (service role) não configurado");
-  return createClient(env.supabaseUrl, env.supabaseServiceKey, {
+  if (!env.supabaseUrl || !env.supabaseSecretKey) throw new Error("Supabase (chave secreta) não configurado");
+  return createClient(env.supabaseUrl, env.supabaseSecretKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 }
 
-/** Cliente público (anon), sem sessão: leitura do catálogo respeitando RLS. */
+/** Cliente público (chave publicável), sem sessão: leitura do catálogo respeitando RLS. */
 export function supabasePublico() {
-  if (!env.supabaseUrl || !env.supabaseAnonKey) throw new Error("Supabase não configurado");
-  return createClient(env.supabaseUrl, env.supabaseAnonKey, {
+  if (!env.supabaseUrl || !env.supabasePublishableKey) throw new Error("Supabase não configurado");
+  return createClient(env.supabaseUrl, env.supabasePublishableKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 }
@@ -25,7 +26,7 @@ export function supabasePublico() {
 /** Cliente com a sessão do usuário logado (painel /admin). RLS decide o que ele pode fazer. */
 export async function supabaseSessao() {
   const store = await cookies();
-  return createServerClient(env.supabaseUrl, env.supabaseAnonKey, {
+  return createServerClient(env.supabaseUrl, env.supabasePublishableKey, {
     cookies: {
       getAll: () => store.getAll(),
       setAll: (lista) => {

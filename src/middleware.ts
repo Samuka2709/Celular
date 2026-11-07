@@ -3,8 +3,8 @@ import { NextResponse, type NextRequest } from "next/server";
 
 // Renova a sessão do Supabase e protege o /admin
 export async function middleware(req: NextRequest) {
-  const url = process.env.SUPABASE_URL;
-  const anon = process.env.SUPABASE_ANON_KEY;
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anon = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
   if (!url || !anon) return NextResponse.next();
 
   let res = NextResponse.next({ request: req });
