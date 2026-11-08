@@ -55,7 +55,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             <Footer />
           </SomenteNaLoja>
           {/* No checkout a bolinha cobria campos; o aviso de testes e o rodapé já trazem o WhatsApp */}
-          <SomenteNaLoja exceto={["/checkout"]}>
+          <SomenteNaLoja exceto={["/checkout", "/produto"]}>
             <WhatsAppFloat />
           </SomenteNaLoja>
         </CartProvider>

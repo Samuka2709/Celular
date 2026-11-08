@@ -24,7 +24,7 @@ export function ProductGallery({ imagens, esgotado }: { imagens: ProductImage[];
           priority
           esgotado={esgotado}
           sizes="(min-width: 1024px) 560px, 100vw"
-          className="animate-fade-up mx-auto max-w-[560px]"
+          className="animate-fade-up mx-auto max-w-[min(560px,30svh)] lg:max-w-[560px]"
         />
       </div>
       {imagens.length > 1 && (

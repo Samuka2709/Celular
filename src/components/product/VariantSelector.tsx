@@ -1,5 +1,6 @@
 "use client";
 
+import { formatBRL } from "@/lib/format";
 import type { Product } from "@/lib/types";
 import { cn } from "@/lib/ui";
 
@@ -17,8 +18,16 @@ export function opcoesDeArmazenamento(product: Product, cor: string) {
   todos.sort((a, b) => parseInt(a) - parseInt(b));
   return todos.map((a) => {
     const v = product.variants.find((x) => x.cor === cor && x.armazenamento === a);
-    return { armazenamento: a, existe: !!v, disponivel: !!v && v.estoque > 0 };
+    return { armazenamento: a, existe: !!v, disponivel: !!v && v.estoque > 0, preco: v?.preco };
   });
+}
+
+/** Diferença de preço de um armazenamento em relação ao mais barato da mesma cor */
+function diferenca(precos: (number | undefined)[], preco?: number) {
+  const validos = precos.filter((p): p is number => p != null);
+  if (preco == null || !validos.length) return null;
+  const base = Math.min(...validos);
+  return preco > base ? "+" + formatBRL(preco - base).replace(",00", "") : null;
 }
 
 /** Linha diagonal que "risca" uma opção esgotada */
@@ -106,7 +115,7 @@ export function VariantSelector({
                 <label
                   key={a.armazenamento}
                   className={cn(
-                    "relative inline-flex h-11 min-w-[88px] items-center justify-center overflow-hidden rounded-xl border px-4 text-sm font-medium tabular-nums",
+                    "relative inline-flex min-h-11 py-1.5 min-w-[88px] items-center justify-center overflow-hidden rounded-xl border px-4 text-sm font-medium tabular-nums",
                     "transition-[border-color,background-color,color,transform] duration-150",
                     ativo ? "border-accent bg-accent/10 text-ink" : "border-line-strong text-ink",
                     a.disponivel
@@ -130,7 +139,12 @@ export function VariantSelector({
                         : `${a.armazenamento}, ${a.existe ? "esgotado" : "indisponível nesta cor"}`
                     }
                   />
-                  <span className={cn(!a.disponivel && "line-through decoration-muted")}>{a.armazenamento}</span>
+                  <span className="flex flex-col items-center leading-tight">
+                    <span className={cn(!a.disponivel && "line-through decoration-muted")}>{a.armazenamento}</span>
+                    {a.disponivel && diferenca(armazenamentos.map((x) => x.preco), a.preco) && (
+                      <span className="text-[11px] font-normal text-muted">{diferenca(armazenamentos.map((x) => x.preco), a.preco)}</span>
+                    )}
+                  </span>
                 </label>
               );
             })}
