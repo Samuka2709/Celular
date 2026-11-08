@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 import { z } from "zod";
 import { exigirAdmin } from "@/lib/admin";
 import { registrar } from "@/lib/auditoria";
@@ -37,6 +38,12 @@ function erroAmigavel(e: { code?: string; message?: string } | null | undefined,
 // ---------------------------------------------------------------------------
 // Login
 // ---------------------------------------------------------------------------
+// Alerta por e-mail enviado depois da resposta, sem atrasar o login; falhas só vão para o log
+function alertar(assunto: string, detalhes: Record<string, string>) {
+  const quando = new Date().toLocaleString("pt-BR", { timeZone: "America/Bahia" });
+  after(() => emailAlertaSeguranca(assunto, { ...detalhes, Quando: quando }).catch((e) => console.error("[admin] alerta", e)));
+}
+
 export async function entrar(_: EstadoAcao, form: FormData): Promise<EstadoAcao> {
   if (!supabaseConfigurado()) return { erro: "Supabase ainda não configurado. Veja o README." };
   const email = String(form.get("email") ?? "").trim();
@@ -51,15 +58,10 @@ export async function entrar(_: EstadoAcao, form: FormData): Promise<EstadoAcao>
     limitar(`login:email:${email.toLowerCase()}`, 10, 60 * 60_000),
   ]);
   if (!porIp.ok || !porEmail.ok) {
-    await registrar("login_bloqueado", { email });
     // Avisa a loja por e-mail, no máximo 1 vez a cada 30 min por IP
-    if ((await limitar(`alerta:login:${ip}`, 1, 30 * 60_000)).ok) {
-      await emailAlertaSeguranca("Login do painel bloqueado", {
-        "E-mail tentado": email,
-        IP: ip,
-        Quando: new Date().toLocaleString("pt-BR", { timeZone: "America/Bahia" }),
-        Motivo: "Muitas tentativas de senha errada",
-      }).catch((e) => console.error("[admin] alerta", e));
+    const [, alerta] = await Promise.all([registrar("login_bloqueado", { email }), limitar(`alerta:login:${ip}`, 1, 30 * 60_000)]);
+    if (alerta.ok) {
+      alertar("Login do painel bloqueado", { "E-mail tentado": email, IP: ip, Motivo: "Muitas tentativas de senha errada" });
     }
     const min = Math.ceil(Math.max(porIp.tentarEmSeg, porEmail.tentarEmSeg) / 60);
     return { erro: `Muitas tentativas. Tente de novo em ${min} min.` };
@@ -79,13 +81,8 @@ export async function entrar(_: EstadoAcao, form: FormData): Promise<EstadoAcao>
 
   const { data: admin } = await supabase.from("admins").select("user_id").eq("user_id", data.user.id).maybeSingle();
   if (!admin) {
-    await registrar("login_sem_permissao", data.user);
-    await supabase.auth.signOut();
-    await emailAlertaSeguranca("Login no painel sem permissão", {
-      Conta: data.user.email ?? data.user.id,
-      IP: ip,
-      Quando: new Date().toLocaleString("pt-BR", { timeZone: "America/Bahia" }),
-    }).catch((e) => console.error("[admin] alerta", e));
+    await Promise.all([registrar("login_sem_permissao", data.user), supabase.auth.signOut()]);
+    alertar("Login no painel sem permissão", { Conta: data.user.email ?? data.user.id, IP: ip });
     return { erro: "Este usuário não tem acesso ao painel." };
   }
   await registrar("login_ok", data.user);

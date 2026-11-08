@@ -32,17 +32,17 @@ export async function POST(req: Request) {
   } catch {
     return json({ ok: false, erro: "Requisição inválida." }, 400);
   }
-  // Captcha invisível (só quando o Turnstile está configurado)
-  if (!(await verificarTurnstile((corpo as { captcha?: string } | null)?.captcha, ip))) {
-    return json({ ok: false, erro: "Não foi possível confirmar que você não é um robô. Tente de novo." }, 400);
-  }
-
   const parsed = checkoutSchema.safeParse(corpo);
   if (!parsed.success) {
     const primeiro = parsed.error.issues[0];
     return json({ ok: false, erro: primeiro?.message ?? "Dados inválidos.", campo: primeiro?.path.join(".") }, 400);
   }
   const d = parsed.data;
+
+  // Captcha invisível (só quando o Turnstile está configurado); depois da validação, que não custa rede
+  if (!(await verificarTurnstile((corpo as { captcha?: string }).captcha, ip))) {
+    return json({ ok: false, erro: "Não foi possível confirmar que você não é um robô. Tente de novo." }, 400);
+  }
 
   // 3. Frete calculado no servidor
   const frete = await calcularFrete({ tipo: d.tipoEntrega, cidade: d.endereco?.cidade, bairro: d.endereco?.bairro });

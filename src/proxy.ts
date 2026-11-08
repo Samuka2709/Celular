@@ -47,7 +47,8 @@ export async function proxy(req: NextRequest) {
     return r;
   }
 
-  res.cookies.set(COOKIE_ATIVIDADE, String(Date.now()), opcoesCookieAtividade);
+  // Renova no máximo a cada 5 min, para não mandar Set-Cookie em toda requisição
+  if (Date.now() - ultimo > 5 * 60_000) res.cookies.set(COOKIE_ATIVIDADE, String(Date.now()), opcoesCookieAtividade);
   return res;
 }
 
