@@ -41,6 +41,18 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Quebra de linha: títulos equilibrados e parágrafos sem palavra sozinha na última linha */
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+p,
+li,
+dd {
+  text-wrap: pretty;
+}
+
 /* Foco visível e consistente */
 :focus-visible {
   outline: 2px solid var(--color-accent);

@@ -164,7 +164,7 @@ export function Testimonials() {
                   <Star key={j} className="size-4 fill-accent text-accent" aria-hidden />
                 ))}
               </div>
-              <span className="rounded border border-dashed border-muted px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-muted">
+              <span className="rounded border border-dashed border-muted px-1.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-muted">
                 Exemplo
               </span>
             </div>
