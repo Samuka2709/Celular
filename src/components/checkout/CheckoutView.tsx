@@ -120,7 +120,7 @@ export function CheckoutView() {
         .then((r) => r.json())
         .then((r) => setFreteEstado(r.ok ? { status: "ok", taxa: r.taxa, prazo: r.prazo } : { status: "erro", erro: r.erro }))
         .catch((e) => {
-          if (e.name !== "AbortError") setFreteEstado({ status: "erro", erro: "Não foi possível calcular a entrega agora." });
+          if (e.name !== "AbortError") setFreteEstado({ status: "erro", erro: "Não conseguimos calcular a entrega agora. Tente de novo em instantes ou escolha retirar na loja." });
         });
     }, 350);
     return () => {

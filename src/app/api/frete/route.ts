@@ -11,6 +11,6 @@ export async function GET(req: Request) {
     return NextResponse.json(r, { headers: { "Cache-Control": "public, max-age=60" } });
   } catch (e) {
     console.error("[frete]", e);
-    return NextResponse.json({ ok: false, erro: "Não foi possível calcular a entrega agora." }, { status: 500 });
+    return NextResponse.json({ ok: false, erro: "Não conseguimos calcular a entrega agora. Tente de novo em instantes ou escolha retirar na loja." }, { status: 500 });
   }
 }

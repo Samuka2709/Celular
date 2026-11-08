@@ -30,7 +30,7 @@ export async function POST(req: Request) {
   try {
     corpo = await req.json();
   } catch {
-    return json({ ok: false, erro: "Requisição inválida." }, 400);
+    return json({ ok: false, erro: "Não conseguimos ler os dados do pedido. Recarregue a página e tente de novo." }, 400);
   }
   const parsed = checkoutSchema.safeParse(corpo);
   if (!parsed.success) {
@@ -78,9 +78,9 @@ export async function POST(req: Request) {
     if (error.message === "QUANTIDADE_INVALIDA" || error.message === "CARRINHO_VAZIO") {
       return json({ ok: false, erro: error.hint || "Carrinho inválido." }, 400);
     }
-    if (error.code === "22P02") return json({ ok: false, erro: "Um item do carrinho não existe mais.", esgotado: true }, 409);
+    if (error.code === "22P02") return json({ ok: false, erro: "Um item do seu carrinho não está mais à venda. Remova-o do carrinho para continuar.", esgotado: true }, 409);
     console.error("[checkout] criar_pedido", error);
-    return json({ ok: false, erro: "Não foi possível criar o pedido. Tente de novo." }, 500);
+    return json({ ok: false, erro: "Não conseguimos registrar seu pedido e nada foi cobrado. Tente de novo ou fale com a gente no WhatsApp." }, 500);
   }
 
   const pedido = data as PedidoCriado;
