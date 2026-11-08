@@ -725,8 +725,10 @@ export function CheckoutView() {
               </>
             ) : (
               <>
-                <Lock className="size-4" aria-hidden />
-                Ir para pagamento · {formatBRL(total)}
+                <Lock className="size-4 shrink-0" aria-hidden />
+                <span>Ir para pagamento</span>
+                <span aria-hidden className="opacity-50">·</span>
+                <span className="whitespace-nowrap tabular-nums">{formatBRL(total)}</span>
               </>
             )}
           </button>
