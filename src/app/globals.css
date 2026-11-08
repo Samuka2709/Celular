@@ -131,19 +131,35 @@ dd {
 }
 
 /* Respeita quem prefere menos movimento */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Menos movimento: tira deslocamentos e zooms, mas mantém esmaecimentos e mudanças de cor
+   (a confirmação "Adicionado", o carregando e as trocas de estado continuam visíveis) */
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
   }
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-delay: 0ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+  /* Entradas viram só esmaecimento curto */
+  .animate-fade-up,
+  .animate-pop {
+    animation: fade-in 150ms ease-out both;
   }
   .animate-draw {
+    animation: none;
     stroke-dashoffset: 0;
+  }
+  /* Sem levantar card, sem zoom na foto e sem "afundar" o botão */
+  [class*="hover:-translate"]:hover,
+  [class*="hover:translate"]:hover {
+    translate: none !important;
+  }
+  [class*="hover:scale"]:hover,
+  [class*="active:scale"]:active,
+  .group:hover [class*="group-hover:scale"] {
+    scale: none !important;
   }
 }
