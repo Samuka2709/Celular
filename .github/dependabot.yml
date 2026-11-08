@@ -1,0 +1,21 @@
+# Dependabot: avisa (com um PR) quando uma biblioteca do site tem falha de segurança conhecida
+# ou atualização. As atualizações comuns vêm agrupadas uma vez por semana para não lotar de PRs.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "08:00"
+      timezone: America/Bahia
+    open-pull-requests-limit: 5
+    groups:
+      dependencias:
+        update-types: [minor, patch]
+    labels: [dependencias]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

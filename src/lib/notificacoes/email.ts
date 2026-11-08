@@ -153,3 +153,20 @@ ${botao(linkAcompanhamento(p.codigo, p.token), "Acompanhar pedido")}`,
     ),
   );
 }
+
+/** Alerta de segurança para a loja (LOJA_EMAIL): ex.: login do painel bloqueado por muitas tentativas */
+export async function emailAlertaSeguranca(assunto: string, detalhes: Record<string, string>) {
+  if (!env.lojaEmail) return;
+  const linhas = Object.entries(detalhes)
+    .map(([k, v]) => `<tr><td style="padding:6px 12px 6px 0;color:#71717a">${esc(k)}</td><td style="padding:6px 0">${esc(v)}</td></tr>`)
+    .join("");
+  await enviar(
+    env.lojaEmail,
+    `[Alerta] ${assunto}`,
+    layout(
+      assunto,
+      `<table role="presentation" cellpadding="0" cellspacing="0" style="font-size:14px">${linhas}</table>
+<p style="font-size:14px;line-height:1.6;color:#3f3f46">Se foi você, ignore. Se não foi, troque a senha do painel e confira a página Atividade no /admin.</p>`,
+    ),
+  );
+}

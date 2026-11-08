@@ -21,6 +21,11 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
                 Este usuário não tem acesso ao painel.
               </p>
             )}
+            {erro === "sessao-expirada" && (
+              <p role="status" className="mt-4 rounded-xl border border-line bg-card p-3 text-sm text-muted">
+                Sua sessão foi encerrada depois de 2 horas sem uso. Entre de novo.
+              </p>
+            )}
             <LoginForm />
           </>
         ) : (

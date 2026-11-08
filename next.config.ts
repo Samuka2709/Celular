@@ -17,12 +17,13 @@ const supabaseOrigem = supabaseHost ? `https://${supabaseHost}` : "";
 // 'unsafe-inline' em script-src é necessário para os scripts que o Next.js injeta na página.
 const csp = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${dev ? " 'unsafe-eval'" : ""} https://vercel.live`,
+  `script-src 'self' 'unsafe-inline'${dev ? " 'unsafe-eval'" : ""} https://vercel.live https://challenges.cloudflare.com`,
   "style-src 'self' 'unsafe-inline'",
   `img-src 'self' data: blob: ${supabaseOrigem}`,
   "font-src 'self' data:",
-  `connect-src 'self' ${supabaseOrigem} ${supabaseOrigem.replace("https://", "wss://")} https://vercel.live${dev ? " ws:" : ""}`,
-  "frame-src https://vercel.live",
+  `connect-src 'self' ${supabaseOrigem} ${supabaseOrigem.replace("https://", "wss://")} https://vercel.live https://challenges.cloudflare.com${dev ? " ws:" : ""}`,
+  // Cloudflare Turnstile (captcha invisível) roda num iframe
+  "frame-src https://vercel.live https://challenges.cloudflare.com",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",

@@ -8,7 +8,9 @@ import { z } from "zod";
 import { exigirAdmin } from "@/lib/admin";
 import { registrar } from "@/lib/auditoria";
 import { supabaseConfigurado } from "@/lib/env";
-import { emailMudancaStatus } from "@/lib/notificacoes/email";
+import { emailAlertaSeguranca, emailMudancaStatus } from "@/lib/notificacoes/email";
+import { marcarAtividadeAdmin } from "@/lib/sessao-admin";
+import { verificarTurnstile } from "@/lib/turnstile";
 import { carregarPedido } from "@/lib/pedidos";
 import { ipDosCabecalhos, limitar } from "@/lib/rate-limit";
 import { supabaseServico, supabaseSessao } from "@/lib/supabase/server";
@@ -50,8 +52,22 @@ export async function entrar(_: EstadoAcao, form: FormData): Promise<EstadoAcao>
   ]);
   if (!porIp.ok || !porEmail.ok) {
     await registrar("login_bloqueado", { email });
+    // Avisa a loja por e-mail, no máximo 1 vez a cada 30 min por IP
+    if ((await limitar(`alerta:login:${ip}`, 1, 30 * 60_000)).ok) {
+      await emailAlertaSeguranca("Login do painel bloqueado", {
+        "E-mail tentado": email,
+        IP: ip,
+        Quando: new Date().toLocaleString("pt-BR", { timeZone: "America/Bahia" }),
+        Motivo: "Muitas tentativas de senha errada",
+      }).catch((e) => console.error("[admin] alerta", e));
+    }
     const min = Math.ceil(Math.max(porIp.tentarEmSeg, porEmail.tentarEmSeg) / 60);
     return { erro: `Muitas tentativas. Tente de novo em ${min} min.` };
+  }
+
+  // Captcha invisível (só quando as chaves do Turnstile estão configuradas)
+  if (!(await verificarTurnstile(form.get("cf-turnstile-response"), ip))) {
+    return { erro: "Não foi possível confirmar que você não é um robô. Recarregue a página e tente de novo." };
   }
 
   const supabase = await supabaseSessao();
@@ -65,9 +81,15 @@ export async function entrar(_: EstadoAcao, form: FormData): Promise<EstadoAcao>
   if (!admin) {
     await registrar("login_sem_permissao", data.user);
     await supabase.auth.signOut();
+    await emailAlertaSeguranca("Login no painel sem permissão", {
+      Conta: data.user.email ?? data.user.id,
+      IP: ip,
+      Quando: new Date().toLocaleString("pt-BR", { timeZone: "America/Bahia" }),
+    }).catch((e) => console.error("[admin] alerta", e));
     return { erro: "Este usuário não tem acesso ao painel." };
   }
   await registrar("login_ok", data.user);
+  await marcarAtividadeAdmin();
   redirect("/admin");
 }
 

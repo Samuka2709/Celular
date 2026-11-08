@@ -9,6 +9,7 @@ import { useCart } from "@/lib/cart";
 import { cpfValido, formatBRL, maskCEP, maskCPF, maskWhatsApp } from "@/lib/format";
 import { SITE } from "@/lib/site";
 import { botao, cn } from "@/lib/ui";
+import { Turnstile, turnstileNoNavegador } from "../Turnstile";
 import { Skeleton } from "../ui/Skeleton";
 import { Field, inputClasses } from "./Field";
 
@@ -85,6 +86,13 @@ export function CheckoutView() {
   const [enviou, setEnviou] = useState(false);
   const [cepStatus, setCepStatus] = useState<"idle" | "buscando" | "ok" | "erro">("idle");
   const [enviando, setEnviando] = useState(false);
+  // Captcha invisível (Turnstile): o token vale uma vez, então recria o widget após cada tentativa
+  const [captcha, setCaptcha] = useState("");
+  const [captchaVersao, setCaptchaVersao] = useState(0);
+  const novoCaptcha = () => {
+    setCaptcha("");
+    setCaptchaVersao((v) => v + 1);
+  };
   const [resumoAberto, setResumoAberto] = useState(false);
   const [freteEstado, setFreteEstado] = useState<EstadoFrete>({ status: "idle" });
   const [erroEnvio, setErroEnvio] = useState<{ erro: string; esgotado?: boolean } | null>(null);
@@ -177,6 +185,10 @@ export function CheckoutView() {
       document.getElementById("cidade")?.focus();
       return;
     }
+    if (turnstileNoNavegador && !captcha) {
+      setErroEnvio({ erro: "Aguarde um instante: estamos confirmando que você não é um robô." });
+      return;
+    }
     setEnviando(true);
     setErroEnvio(null);
     try {
@@ -196,10 +208,12 @@ export function CheckoutView() {
               ? { cep: d.cep, rua: d.rua, numero: d.numero, complemento: d.complemento, bairro: d.bairro, cidade: d.cidade, uf: d.uf }
               : undefined,
           itens: items.map((i) => ({ variantId: i.variantId, quantidade: i.quantidade })),
+          captcha,
         }),
       });
       const r = await resp.json();
       if (!r.ok) {
+        novoCaptcha();
         setErroEnvio({ erro: r.erro ?? "Não foi possível continuar.", esgotado: r.esgotado });
         setEnviando(false);
         return;
@@ -208,6 +222,7 @@ export function CheckoutView() {
       if (/^https?:\/\//.test(r.redirect)) window.location.assign(r.redirect);
       else router.push(r.redirect);
     } catch {
+      novoCaptcha();
       setErroEnvio({ erro: "Sem conexão. Confira sua internet e tente de novo." });
       setEnviando(false);
     }
@@ -699,6 +714,9 @@ export function CheckoutView() {
               </span>
             </div>
           )}
+          <div className="mt-6 empty:hidden">
+            <Turnstile key={captchaVersao} onToken={setCaptcha} />
+          </div>
           <button type="submit" disabled={enviando} className={botao("primario", "lg", "mt-6 w-full")}>
             {enviando ? (
               <>
