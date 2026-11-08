@@ -20,7 +20,7 @@ export default function ContatoPage() {
         descricao="O jeito mais rápido de falar com a gente é pelo WhatsApp. Respondemos no horário de atendimento."
         migalhas={[{ href: "/", label: "Início" }, { label: "Contato" }]}
       />
-      <div className="grid gap-6 md:grid-cols-[1.2fr_1fr]">
+      <div className="grid gap-6 md:grid-cols-[1.2fr_1fr] [&>*]:min-w-0 [overflow-wrap:anywhere]">
         <div className="relative overflow-hidden rounded-3xl border border-line bg-card p-6 sm:p-10">
           <div aria-hidden className="absolute -right-20 -top-20 size-72 rounded-full bg-[radial-gradient(closest-side,rgb(37_211_102/0.18),transparent)]" />
           <MessageCircle className="relative size-10 text-whatsapp" strokeWidth={1.5} aria-hidden />

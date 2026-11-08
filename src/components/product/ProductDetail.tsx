@@ -85,8 +85,8 @@ export function ProductDetail({ product }: { product: Product }) {
   }
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-14">
-      <div className="lg:sticky lg:top-24 lg:self-start">
+    <div className="grid gap-8 md:grid-cols-2 md:gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-14">
+      <div className="md:sticky md:top-24 md:self-start">
         <ProductGallery imagens={imagens} esgotado={esgotado} />
       </div>
 
@@ -213,7 +213,7 @@ export function ProductDetail({ product }: { product: Product }) {
           </a>
         </div>
 
-        <ul className="mt-6 grid gap-3 rounded-2xl border border-line p-4 text-sm sm:grid-cols-3">
+        <ul className="mt-6 grid gap-3 rounded-2xl border border-line p-4 text-sm sm:grid-cols-3 md:grid-cols-1 lg:grid-cols-3">
           <li className="flex items-start gap-2.5">
             <Truck className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden />
             <span className="text-muted">

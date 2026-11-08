@@ -27,6 +27,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   themeColor: "#0b0b0d",
   colorScheme: "dark",
+  // Deixa a barra de compra e o botão do WhatsApp respeitarem o notch e a barra de gestos
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
