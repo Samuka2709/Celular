@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "imagens": "node scripts/gerar-imagens.mts",
-    "seed:gerar": "node scripts/gerar-seed.mts"
+    "seed:gerar": "node scripts/gerar-seed.mts",
+    "backup": "node --env-file=.env.local scripts/backup.mts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

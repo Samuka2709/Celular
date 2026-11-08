@@ -6,6 +6,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { exigirAdmin } from "@/lib/admin";
+import { registrar } from "@/lib/auditoria";
 import { supabaseConfigurado } from "@/lib/env";
 import { emailMudancaStatus } from "@/lib/notificacoes/email";
 import { carregarPedido } from "@/lib/pedidos";
@@ -48,24 +49,32 @@ export async function entrar(_: EstadoAcao, form: FormData): Promise<EstadoAcao>
     limitar(`login:email:${email.toLowerCase()}`, 10, 60 * 60_000),
   ]);
   if (!porIp.ok || !porEmail.ok) {
+    await registrar("login_bloqueado", { email });
     const min = Math.ceil(Math.max(porIp.tentarEmSeg, porEmail.tentarEmSeg) / 60);
     return { erro: `Muitas tentativas. Tente de novo em ${min} min.` };
   }
 
   const supabase = await supabaseSessao();
   const { data, error } = await supabase.auth.signInWithPassword({ email, password: senha });
-  if (error || !data.user) return { erro: "E-mail ou senha incorretos." };
+  if (error || !data.user) {
+    await registrar("login_falhou", { email });
+    return { erro: "E-mail ou senha incorretos." };
+  }
 
   const { data: admin } = await supabase.from("admins").select("user_id").eq("user_id", data.user.id).maybeSingle();
   if (!admin) {
+    await registrar("login_sem_permissao", data.user);
     await supabase.auth.signOut();
     return { erro: "Este usuário não tem acesso ao painel." };
   }
+  await registrar("login_ok", data.user);
   redirect("/admin");
 }
 
 export async function sair() {
   const supabase = await supabaseSessao();
+  const { data } = await supabase.auth.getUser();
+  if (data.user) await registrar("logout", data.user);
   await supabase.auth.signOut();
   redirect("/admin/login");
 }
@@ -95,7 +104,7 @@ const produtoSchema = z.object({
 });
 
 export async function salvarProduto(_: EstadoAcao, form: FormData): Promise<EstadoAcao> {
-  const { supabase } = await exigirAdmin();
+  const { supabase, user } = await exigirAdmin();
   let ficha: Record<string, string> = {};
   try {
     ficha = JSON.parse(String(form.get("ficha") ?? "{}"));
@@ -147,6 +156,7 @@ export async function salvarProduto(_: EstadoAcao, form: FormData): Promise<Esta
     void _ativo;
     const { error } = await supabase.from("products").update(form.has("ativo_presente") ? linha : semAtivo).eq("id", p.id);
     if (error) return { erro: erroAmigavel(error, "Não foi possível salvar") };
+    await registrar("produto_editado", user, { produto: p.id, nome: p.nome });
     atualizarLoja();
     revalidatePath(`/admin/produtos/${p.id}`);
     return { ok: true, msg: "Produto salvo." };
@@ -154,19 +164,21 @@ export async function salvarProduto(_: EstadoAcao, form: FormData): Promise<Esta
 
   const { data, error } = await supabase.from("products").insert(linha).select("id").single();
   if (error || !data) return { erro: erroAmigavel(error, "Não foi possível criar o produto") };
+  await registrar("produto_criado", user, { produto: data.id, nome: p.nome });
   atualizarLoja();
   redirect(`/admin/produtos/${data.id}?novo=1`);
 }
 
 export async function alternarAtivo(id: string, ativo: boolean) {
-  const { supabase } = await exigirAdmin();
-  await supabase.from("products").update({ ativo }).eq("id", id);
+  const { supabase, user } = await exigirAdmin();
+  const { error } = await supabase.from("products").update({ ativo }).eq("id", id);
+  if (!error) await registrar(ativo ? "produto_ativado" : "produto_desativado", user, { produto: id });
   atualizarLoja();
   revalidatePath("/admin/produtos");
 }
 
 export async function duplicarProduto(id: string) {
-  const { supabase } = await exigirAdmin();
+  const { supabase, user } = await exigirAdmin();
   const { data: p } = await supabase
     .from("products")
     .select("*, product_variants(*), product_images(*)")
@@ -223,6 +235,7 @@ export async function duplicarProduto(id: string) {
       .from("product_images")
       .insert(imagens.map((i) => ({ product_id: novo.id, url: i.url, cor: i.cor, alt: i.alt, ordem: i.ordem })));
   }
+  await registrar("produto_duplicado", user, { origem: id, produto: novo.id });
   redirect(`/admin/produtos/${novo.id}?copia=1`);
 }
 
@@ -243,7 +256,7 @@ const varianteSchema = z.object({
 });
 
 export async function salvarVariacoes(productId: string, lista: unknown): Promise<EstadoAcao> {
-  const { supabase } = await exigirAdmin();
+  const { supabase, user } = await exigirAdmin();
   const parsed = z.array(varianteSchema).safeParse(lista);
   if (!parsed.success) return { erro: parsed.error.issues[0]?.message ?? "Variações inválidas." };
 
@@ -276,6 +289,11 @@ export async function salvarVariacoes(productId: string, lista: unknown): Promis
     if (error) return { erro: erroAmigavel(error, `Não foi possível salvar a variação ${v.cor} ${v.armazenamento ?? ""}`) };
   }
 
+  await registrar("variacoes_salvas", user, {
+    produto: productId,
+    removidas: remover.length,
+    variacoes: manter.map((v) => ({ cor: v.cor, armazenamento: v.armazenamento, preco: v.preco, estoque: v.estoque })),
+  });
   atualizarLoja();
   revalidatePath(`/admin/produtos/${productId}`);
   return { ok: true, msg: "Variações salvas." };
@@ -285,7 +303,7 @@ export async function salvarVariacoes(productId: string, lista: unknown): Promis
 // Fotos (já chegam comprimidas em WebP pelo navegador)
 // ---------------------------------------------------------------------------
 export async function enviarImagem(form: FormData): Promise<EstadoAcao> {
-  const { supabase } = await exigirAdmin();
+  const { supabase, user } = await exigirAdmin();
   const productId = String(form.get("productId") ?? "");
   const cor = String(form.get("cor") ?? "") || null;
   const arquivo = form.get("arquivo");
@@ -312,6 +330,7 @@ export async function enviarImagem(form: FormData): Promise<EstadoAcao> {
     .from("product_images")
     .insert({ product_id: productId, url: pub.publicUrl, cor, ordem: (ultima?.ordem ?? -1) + 1 });
   if (error) return { erro: erroAmigavel(error, "Foto enviada, mas não foi possível registrar") };
+  await registrar("foto_enviada", user, { produto: productId, arquivo: caminho });
 
   atualizarLoja();
   revalidatePath(`/admin/produtos/${productId}`);
@@ -319,10 +338,11 @@ export async function enviarImagem(form: FormData): Promise<EstadoAcao> {
 }
 
 export async function removerImagem(id: string) {
-  const { supabase } = await exigirAdmin();
+  const { supabase, user } = await exigirAdmin();
   const { data: img } = await supabase.from("product_images").select("url, product_id").eq("id", id).single();
   if (!img) return;
   await supabase.from("product_images").delete().eq("id", id);
+  await registrar("foto_removida", user, { produto: img.product_id, url: img.url });
   const marcador = "/storage/v1/object/public/produtos/";
   const i = img.url.indexOf(marcador);
   if (i >= 0) await supabase.storage.from("produtos").remove([img.url.slice(i + marcador.length)]);
@@ -362,7 +382,7 @@ export async function atualizarImagem(id: string, dados: { cor?: string | null; 
 const STATUS_VALIDOS: OrderStatus[] = ["pago", "separando", "enviado", "pronto_retirada", "entregue", "cancelado"];
 
 export async function mudarStatusPedido(orderId: string, status: OrderStatus): Promise<EstadoAcao> {
-  await exigirAdmin();
+  const { user } = await exigirAdmin();
   if (!STATUS_VALIDOS.includes(status)) return { erro: "Status inválido." };
 
   // As regras de estoque ficam na função SQL; o servidor só chama depois de conferir que é admin.
@@ -375,6 +395,8 @@ export async function mudarStatusPedido(orderId: string, status: OrderStatus): P
     if (error.message === "TRANSICAO_INVALIDA") return { erro: error.hint ?? "Mudança de status não permitida." };
     return { erro: erroAmigavel(error, "Não foi possível mudar o status") };
   }
+
+  await registrar("pedido_status", user, { pedido: orderId, status });
 
   const pedido = await carregarPedido(orderId);
   if (pedido) await emailMudancaStatus(pedido, status).catch((e) => console.error("[admin] e-mail", e));
@@ -398,7 +420,7 @@ const zonaSchema = z.object({
 });
 
 export async function salvarZona(_: EstadoAcao, form: FormData): Promise<EstadoAcao> {
-  const { supabase } = await exigirAdmin();
+  const { supabase, user } = await exigirAdmin();
   const parsed = zonaSchema.safeParse({
     id: String(form.get("id") ?? "") || undefined,
     cidade: String(form.get("cidade") ?? ""),
@@ -414,12 +436,14 @@ export async function salvarZona(_: EstadoAcao, form: FormData): Promise<EstadoA
     ? await supabase.from("delivery_zones").update(linha).eq("id", z0.id)
     : await supabase.from("delivery_zones").insert(linha);
   if (error) return { erro: erroAmigavel(error, "Não foi possível salvar a taxa") };
+  await registrar("frete_salvo", user, linha);
   revalidatePath("/admin/entrega");
   return { ok: true, msg: "Taxa salva." };
 }
 
 export async function removerZona(id: string) {
-  const { supabase } = await exigirAdmin();
-  await supabase.from("delivery_zones").delete().eq("id", id);
+  const { supabase, user } = await exigirAdmin();
+  const { error } = await supabase.from("delivery_zones").delete().eq("id", id);
+  if (!error) await registrar("frete_removido", user, { zona: id });
   revalidatePath("/admin/entrega");
 }

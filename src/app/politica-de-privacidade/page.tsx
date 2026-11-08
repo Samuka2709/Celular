@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: "Política de privacidade" };
 // MODELO: revise com um profissional antes de publicar.
 export default function PrivacidadePage() {
   return (
-    <TextPage titulo="Política de privacidade" atualizado="06/11/2026">
+    <TextPage titulo="Política de privacidade" atualizado="07/11/2026">
       <p>
         Esta política explica como a {SITE.nome} (CNPJ {SITE.cnpj}) coleta, usa e protege seus dados pessoais, de acordo
         com a Lei Geral de Proteção de Dados (Lei 13.709/2018).
@@ -42,12 +42,50 @@ export default function PrivacidadePage() {
       </p>
 
       <h2>Por quanto tempo guardamos</h2>
-      <p>Pelo tempo necessário para cumprir o pedido e as obrigações legais, como a guarda de documentos fiscais.</p>
+      <ul>
+        <li>
+          <strong>Dados dos pedidos:</strong> 5 anos após a compra, prazo exigido para documentos fiscais e para eventuais
+          reclamações de consumo.
+        </li>
+        <li>
+          <strong>Pedidos não pagos ou cancelados antes do pagamento:</strong> até 6 meses.
+        </li>
+        <li>
+          <strong>Registros de acesso ao painel da loja:</strong> 1 ano.
+        </li>
+      </ul>
+      <p>Depois desses prazos, os dados são apagados ou anonimizados.</p>
+
+      <h2>Como protegemos</h2>
+      <ul>
+        <li>Conexão sempre criptografada (HTTPS).</li>
+        <li>Banco de dados com regras de acesso: apenas a equipe autorizada vê os pedidos, com login e verificação em duas etapas.</li>
+        <li>Cada pedido tem um link exclusivo de acompanhamento, que não deve ser compartilhado.</li>
+        <li>Registro das ações feitas no painel da loja.</li>
+      </ul>
 
       <h2>Seus direitos</h2>
       <p>
         Você pode pedir acesso, correção ou exclusão dos seus dados a qualquer momento pelo e-mail{" "}
         <a href={`mailto:${SITE.email}`}>{SITE.email}</a> ou pelo WhatsApp {SITE.whatsappExibicao}.
+      </p>
+      <p>
+        Pela LGPD, você também pode pedir: confirmação de que tratamos seus dados, cópia deles, informação sobre com quem
+        foram compartilhados e revogação de consentimento. Respondemos em até <strong>15 dias</strong>. Dados que a lei
+        obriga a guardar (como os fiscais) são mantidos até o fim do prazo legal, e depois apagados.
+      </p>
+
+      <h2>Incidentes de segurança</h2>
+      <p>
+        Se ocorrer um incidente que possa trazer risco ou dano relevante a você, avisaremos os titulares afetados e a
+        Autoridade Nacional de Proteção de Dados (ANPD), informando o que aconteceu, quais dados foram envolvidos e as
+        medidas tomadas.
+      </p>
+
+      <h2>Encarregado (DPO)</h2>
+      <p>
+        O responsável pelo tratamento dos dados pode ser contatado pelo e-mail{" "}
+        <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.
       </p>
     </TextPage>
   );

@@ -49,6 +49,7 @@ export function Footer() {
             {[
               { href: "/trocas-e-garantia", label: "Trocas e garantia" },
               { href: "/politica-de-privacidade", label: "Política de privacidade" },
+              { href: "/termos-de-uso", label: "Termos de uso" },
               { href: "/contato", label: "Fale conosco" },
             ].map((n) => (
               <li key={n.href}>
@@ -95,7 +96,7 @@ export function Footer() {
             <p className="mt-2 text-xs text-subtle">Pagamentos processados pelo Mercado Pago.</p>
           </div>
           <p className="text-xs text-subtle">
-            © {new Date().getFullYear()} {SITE.nome} · CNPJ {SITE.cnpj}
+            © {new Date().getFullYear()} {SITE.nome} · CNPJ {SITE.cnpj} · {SITE.endereco}
           </p>
         </div>
       </div>

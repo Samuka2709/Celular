@@ -43,3 +43,6 @@ next-env.d.ts
 
 # configuração local do preview
 /.claude/
+
+# backups do banco (têm dados de clientes)
+/backups/

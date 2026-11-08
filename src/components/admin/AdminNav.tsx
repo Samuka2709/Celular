@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutDashboard, Package, Receipt, Truck } from "lucide-react";
+import { History, LayoutDashboard, Package, Receipt, Truck } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/ui";
@@ -10,6 +10,7 @@ const ITENS = [
   { href: "/admin/pedidos", label: "Pedidos", icone: Receipt },
   { href: "/admin/produtos", label: "Produtos", icone: Package },
   { href: "/admin/entrega", label: "Entrega", icone: Truck },
+  { href: "/admin/atividade", label: "Atividade", icone: History },
 ];
 
 export function AdminNav() {
