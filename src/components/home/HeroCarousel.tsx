@@ -72,7 +72,7 @@ export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
           sizes="(min-width: 768px) 64vw, 100vw"
           className="object-cover object-[70%_center]"
         />
-        <div className="absolute inset-0 bg-[linear-gradient(to_top,#0b0b0d_0%,transparent_35%)] md:bg-[linear-gradient(to_right,#0b0b0d_0%,rgb(11_11_13/0.6)_22%,transparent_50%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_top,#0a1626_0%,transparent_35%)] md:bg-[linear-gradient(to_right,#0a1626_0%,rgb(10_22_38/0.6)_22%,transparent_50%)]" />
       </div>
       <div className={cn(container, "relative")}>
         <div className="relative">

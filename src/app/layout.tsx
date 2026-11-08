@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0b0b0d",
+  themeColor: "#0a1626",
   colorScheme: "dark",
   // Deixa a barra de compra e o botão do WhatsApp respeitarem o notch e a barra de gestos
   viewportFit: "cover",
