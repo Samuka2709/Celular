@@ -1,6 +1,6 @@
 // Configuração da loja num lugar só. Troque estes valores pelos reais.
 
-const WHATSAPP = process.env.NEXT_PUBLIC_LOJA_WHATSAPP || "5573999999999";
+const WHATSAPP = process.env.NEXT_PUBLIC_LOJA_WHATSAPP || "5573998258544";
 
 export const SITE = {
   nome: "Loja Exemplo", // nome provisório
