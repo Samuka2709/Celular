@@ -113,11 +113,20 @@ export function ProductCard({ product, priority = false }: { product: Product; p
   );
 }
 
-export function ProductGrid({ products, prioridade = 0 }: { products: Product[]; prioridade?: number }) {
+export function ProductGrid({
+  products,
+  prioridade = 0,
+  maxCelular,
+}: {
+  products: Product[];
+  prioridade?: number;
+  /** Quantos cards mostrar no celular (o resto aparece a partir de sm) */
+  maxCelular?: number;
+}) {
   return (
     <ul className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
       {products.map((p, i) => (
-        <li key={p.id} className="flex [&>article]:w-full">
+        <li key={p.id} className={cn("flex [&>article]:w-full", maxCelular != null && i >= maxCelular && "max-sm:hidden")}>
           <ProductCard product={p} priority={i < prioridade} />
         </li>
       ))}

@@ -99,9 +99,9 @@ export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
                     <span className="block text-accent">{s.linha2}</span>
                   </h2>
                   <p className="mt-4 max-w-md text-base leading-relaxed text-muted">{s.subtitulo}</p>
-                  <ul className="mt-6 grid max-w-md grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-4">
+                  <ul className="mt-6 hidden max-w-md grid-cols-4 gap-x-4 md:grid">
                     {SELOS.map(({ icone: Icone, linha1, linha2 }) => (
-                      <li key={linha1} className="flex items-center gap-2 text-[10px] font-semibold uppercase leading-tight tracking-wider text-muted">
+                      <li key={linha1} className="flex items-center gap-2 text-xs font-semibold uppercase leading-tight tracking-wide text-muted">
                         <Icone className="size-5 shrink-0 text-ink" strokeWidth={1.6} aria-hidden />
                         <span>
                           {linha1}

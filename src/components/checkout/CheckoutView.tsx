@@ -358,21 +358,25 @@ export function CheckoutView() {
             const feito = i < etapa;
             const atual = i === etapa;
             return (
-              <li key={nome} className="flex flex-1 items-center gap-2" aria-current={atual ? "step" : undefined}>
+              <li
+                key={nome}
+                className={cn("flex items-center gap-1.5 sm:gap-2", i < etapas.length - 1 && "min-w-0 flex-1")}
+                aria-current={atual ? "step" : undefined}
+              >
                 <span
                   className={cn(
-                    "grid size-7 shrink-0 place-items-center rounded-full text-xs font-bold transition-colors duration-200",
+                    "grid size-6 shrink-0 place-items-center rounded-full text-xs font-bold transition-colors duration-200 sm:size-7",
                     feito ? "bg-accent text-canvas" : atual ? "border-2 border-accent text-ink" : "border border-line-strong text-muted",
                   )}
                 >
                   {feito ? <Check className="size-4" strokeWidth={3} aria-hidden /> : i + 1}
                 </span>
-                <span className={cn("text-sm font-medium", atual || feito ? "text-ink" : "text-muted")}>
+                <span className={cn("text-xs font-medium sm:text-sm", atual || feito ? "text-ink" : "text-muted")}>
                   {nome}
                   {feito && <span className="sr-only"> (concluído)</span>}
                 </span>
                 {i < etapas.length - 1 && (
-                  <span aria-hidden className={cn("h-px flex-1 transition-colors duration-200", feito ? "bg-accent" : "bg-line-strong")} />
+                  <span aria-hidden className={cn("h-px min-w-3 flex-1 transition-colors duration-200", feito ? "bg-accent" : "bg-line-strong")} />
                 )}
               </li>
             );

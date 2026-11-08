@@ -83,7 +83,7 @@ export default async function Home() {
 
       <section aria-labelledby="mais-vendidos" className={cn(container, "py-16 sm:py-24")}>
         <SectionHeader id="mais-vendidos" titulo="Mais vendidos" href="/celulares" />
-        <ProductGrid products={maisVendidos} />
+        <ProductGrid products={maisVendidos} maxCelular={4} />
       </section>
 
       <Brands marcas={marcas} />
