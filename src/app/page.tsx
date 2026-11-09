@@ -46,6 +46,13 @@ export default async function Home() {
   const pixDestaque = emOferta ?? celulares.filter(disponivel).sort(porVendas)[1];
 
   const slides = [
+    emOferta &&
+      slide(
+        emOferta,
+        "Black November,",
+        "preço de verdade.",
+        "Descontos reais em iPhones e acessórios, com 5% off no Pix ou em até 10x sem juros.",
+      ),
     novoDestaque &&
       slide(
         novoDestaque,

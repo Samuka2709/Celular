@@ -3,7 +3,7 @@
 const WHATSAPP = process.env.NEXT_PUBLIC_LOJA_WHATSAPP || "5573998258544";
 
 export const SITE = {
-  nome: "Loja Exemplo", // nome provisório
+  nome: "Sua Loja", // nome provisório (demo)
   descricao: "Celulares novos e seminovos revisados em Ilhéus e região. Pague com Pix, cartão ou boleto.",
   // Somente números, com DDI e DDD. Vem da variável LOJA_WHATSAPP (ex.: 5573999999999).
   whatsapp: WHATSAPP,
@@ -12,7 +12,7 @@ export const SITE = {
   endereco: "Rua Exemplo, 123, Centro, Ilhéus, BA",
   horario: "Seg a sex 9h às 18h, sáb 9h às 13h",
   cnpj: "00.000.000/0001-00",
-  avisoTopo: "Entrega em Ilhéus e região | 5% off no Pix",
+  avisoTopo: "Black November | 5% off no Pix | até 10x sem juros",
   descontoPix: 0.05,
   parcelasSemJuros: 10,
   url: urlDoSite(),
